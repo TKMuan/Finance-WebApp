@@ -1,6 +1,6 @@
 from datetime import datetime, timezone
-import psycopg2
 from psycopg2 import sql 
+from psycopg2.extensions import connection
 import hashlib
 
 
@@ -34,19 +34,22 @@ class Document:
             exists = cur.fetchone()[0]
         return exists
 
+    @staticmethod
+    def validate_modifying_user(conn, modifying_user: str):
+        if not Document.primary_key_exists(conn, 'account', 'id', modifying_user):
+            raise MissingModifyingUser(f"Modifying user with id {modifying_user} does not exist.")
+
     def create_id(self):
         self.id = generate_sha256_hash(str(self.created) + self.modified_by)
     
-    def insert(self, conn: psycopg2.extensions.connection, modifying_user: str):
+    def insert(self, conn: connection, modifying_user: str):
         try:
-            self.create_id()
             self.created = datetime.now(timezone.utc)
             self.modified = self.created
-
-            if not Document.primary_key_exists(conn, 'account', 'id', self.modified_by): 
-                raise MissingModifyingUser(f"Modifying user with id {self.modified_by} does not exist.")
+            Document.validate_modifying_user(conn, modifying_user)
 
             self.modified_by = modifying_user
+            self.create_id()
 
             current_data = self.to_dict()
             columns = ', '.join(current_data.keys()) 
@@ -58,14 +61,12 @@ class Document:
             with conn.cursor() as cur:
                 cur.execute(query, values)
 
-            conn.commit()
-
         except Exception as _:
             conn.rollback()
             raise
 
 
-    def update(self, conn: psycopg2.extensions.connection, updates: dict, key_column: str, key_value):
+    def update(self, conn: connection, updates: dict, key_column: str, key_value):
         try:
             if not updates:
                 return  # nothing to update
@@ -74,7 +75,9 @@ class Document:
                 raise MissingDocumentID("Document ID is required for update.")
 
             if not Document.primary_key_exists(conn, self.table, key_column, key_value):
-                raise MissingDocumentID(f"Document with {key_column}={key_value} does not exist.")
+                raise MissingDocumentID(f"Document with {key_column}={key_value} does not exist in {self.table}.")
+            
+            Document.validate_modifying_user(conn, updates.get("modified_by", ""))
 
             # build SQL safe identifiers for columns
             set_clause = sql.SQL(', ').join(
@@ -92,11 +95,13 @@ class Document:
 
             with conn.cursor() as cur:
                 cur.execute(query, values)
-            conn.commit()
 
         except Exception as _:
             conn.rollback()
             raise
+    
+    def save(self, conn: connection):
+        conn.commit()
 
 
 class Account(Document):
@@ -104,15 +109,21 @@ class Account(Document):
     id: str
     email: str
     password: str
-    uid: str
+    fname: str
+    mname: str
+    lname: str
+    required_fields = {'email', 'password', 'fname', 'lname', 'modifying_user'}
+    optional_fields = {'mname'}
 
     @staticmethod
     def from_dict(data: dict):
         account = Account()
         account.id = data.get("id", "")
         account.email = data.get("email", "")
+        account.fname = data.get("fname", "")
+        account.mname = data.get("mname", "")
+        account.lname = data.get("lname", "")
         account.password = data.get("password", "")
-        account.uid = data.get("uid", "")
         return account
 
     def to_dict(self):
@@ -120,17 +131,13 @@ class Account(Document):
             "id": self.id,
             "email": self.email,
             "password": self.password,
-            "uid": self.uid,
+            "fname": self.fname,
+            "mname": self.mname,
+            "lname": self.lname,
             "created": self.created,
             "modified": self.modified,
             "modified_by": self.modified_by,
         }
-
-class UserInfo(Document):
-    id: str
-    first_name: str
-    last_name: str
-    middle_name: str
 
 class transaction(Document):
     id: str

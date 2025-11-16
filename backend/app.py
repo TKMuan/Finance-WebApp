@@ -1,23 +1,15 @@
 from flask import Flask, render_template, request, redirect, url_for
-import psycopg2
-import os
+from src.blueprint import account
+from src.db import get_db_connection
 from dotenv import load_dotenv
 
 load_dotenv()
 
 app = Flask(__name__)
+app.register_blueprint(account)
 
-def get_db_connection():
-    conn = psycopg2.connect(
-        host=os.getenv("DB_HOST"),
-        database=os.getenv("DB_NAME").lower(),
-        user=os.getenv("DB_USER").lower(),
-        password=os.getenv("DB_PASSWORD"),
-        port=os.getenv("DB_PORT")
-    )
-    return conn
 
-@app.route('/')
+@app.route('/debug/tables')
 def index():
     conn = get_db_connection()
     cur = conn.cursor()

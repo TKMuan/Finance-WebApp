@@ -1,8 +1,11 @@
 CREATE TABLE IF NOT EXISTS "document" (
 	"created" TIMESTAMP NOT NULL,
 	"modified" TIMESTAMP NOT NULL,
-	"modified_by" CHAR(1) NOT NULL
+	"modified_by" CHAR(65) NOT NULL
 );
+
+
+
 
 CREATE TABLE IF NOT EXISTS "transactions" (
 	"id" CHAR(65) NOT NULL UNIQUE,
@@ -14,13 +17,21 @@ CREATE TABLE IF NOT EXISTS "transactions" (
 	PRIMARY KEY("id")
 ) INHERITS ("document");
 
+
+
+
 CREATE TABLE IF NOT EXISTS "account" (
 	"id" CHAR(65) NOT NULL UNIQUE,
 	"email" CHAR(50) NOT NULL,
-	"password" CHAR(50) NOT NULL,
-	"uid" CHAR(65) NOT NULL,
+	"password" CHAR(65) NOT NULL,
+	"fname" CHAR(50) NOT NULL,
+	"lname" CHAR(50) NOT NULL,
+	"mname" CHAR(50),
 	PRIMARY KEY("id")
 ) INHERITS ("document");
+
+
+
 
 CREATE TABLE IF NOT EXISTS "user_info" (
 	"id" CHAR(65) NOT NULL UNIQUE,
@@ -69,15 +80,8 @@ CREATE TABLE IF NOT EXISTS "transactionMethods" (
 
 
 
-
-
-
-
 ALTER TABLE "document"
 ADD FOREIGN KEY("modified_by") REFERENCES "account"("id")
-ON UPDATE NO ACTION ON DELETE NO ACTION;
-ALTER TABLE "account"
-ADD FOREIGN KEY("uid") REFERENCES "user_info"("id")
 ON UPDATE NO ACTION ON DELETE NO ACTION;
 ALTER TABLE "transactions"
 ADD FOREIGN KEY("accountID") REFERENCES "account"("id")
