@@ -1,7 +1,10 @@
 from datetime import datetime, timezone
 from psycopg2 import sql 
 from psycopg2.extensions import connection
+from src.errors import (MissingModifyingUser, MissingDocumentID, UnauthorizedAccess)
+from src.errors import MissingFieldError
 import hashlib
+
 
 
 def generate_sha256_hash(input_string):
@@ -9,17 +12,6 @@ def generate_sha256_hash(input_string):
     sha256_hash.update(input_string.encode('utf-8'))
     return sha256_hash.hexdigest()
 
-class MissingModifyingUser(Exception):
-    def __init__(self, message=None):
-        if message is None:
-            message = "Modifying user information is required."
-        super().__init__(message)
-
-class MissingDocumentID(Exception):
-    def __init__(self, message=None):
-        if message is None:
-            message = "Valid Document ID is required."
-        super().__init__(message)
 
 class Document:
     created: datetime
@@ -38,6 +30,28 @@ class Document:
     def validate_modifying_user(conn, modifying_user: str):
         if not Document.primary_key_exists(conn, 'account', 'id', modifying_user):
             raise MissingModifyingUser(f"Modifying user with id {modifying_user} does not exist.")
+
+    @classmethod
+    def allowed_fields(cls) -> set:
+        return cls.required_fields.union(cls.optional_fields)
+
+    @classmethod
+    def check_extra_fields(cls, data: dict, allowed_fields: set = None) -> bool:
+        if allowed_fields is None:
+            allowed_fields = cls.allowed_fields()
+        return bool(set(data.keys()) - allowed_fields)
+
+    @classmethod
+    def check_required_fields(cls, data: dict, required_fields: set[str]) -> None:
+        if not required_fields:
+            required_fields = cls.required_fields
+        missing_fields = required_fields - set(data.keys())
+        if missing_fields:
+            raise MissingFieldError(fields=missing_fields)
+
+    def validate_authorization(self, conn, user_id: str):
+        if not Document.primary_key_exists(conn, 'account', 'id', user_id) or self.id != user_id:
+            raise UnauthorizedAccess(f"User with id {user_id} is not authorized.")
 
     def create_id(self):
         self.id = generate_sha256_hash(str(self.created) + self.modified_by)
@@ -139,7 +153,7 @@ class Account(Document):
             "modified_by": self.modified_by,
         }
 
-class transaction(Document):
+class Transaction(Document):
     id: str
     account_id: str
     amount: float

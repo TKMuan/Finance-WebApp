@@ -1,14 +1,26 @@
+import os
 from flask import Flask, render_template, request, redirect, url_for
-from src.blueprint import account
+from flask_jwt_extended import JWTManager, jwt_required
+from src.blueprints.account import account
+from src.blueprints.auth import auth
 from src.db import get_db_connection
 from dotenv import load_dotenv
+from datetime import timedelta
 
 load_dotenv()
 
 app = Flask(__name__)
 app.register_blueprint(account)
+app.register_blueprint(auth)
 
 
+app.config['JWT_SECRET_KEY'] = os.getenv('JWT_SECRET_KEY')
+app.config['JWT_ACCESS_TOKEN_EXPIRES'] = timedelta(minutes=15)
+app.config['JWT_REFRESH_TOKEN_EXPIRES'] = timedelta(days=30)
+
+jwt = JWTManager(app)
+
+@jwt_required()
 @app.route('/debug/tables')
 def index():
     conn = get_db_connection()

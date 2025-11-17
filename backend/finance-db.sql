@@ -1,17 +1,17 @@
 CREATE TABLE IF NOT EXISTS "document" (
 	"created" TIMESTAMP NOT NULL,
 	"modified" TIMESTAMP NOT NULL,
-	"modified_by" CHAR(65) NOT NULL
+	"modified_by" VARCHAR(65) NOT NULL
 );
 
 
 
 
 CREATE TABLE IF NOT EXISTS "transactions" (
-	"id" CHAR(65) NOT NULL UNIQUE,
+	"id" VARCHAR(65) NOT NULL UNIQUE,
 	"description" TEXT,
 	"transaction_time" TIMESTAMP NOT NULL,
-	"accountID" CHAR(65) NOT NULL,
+	"accountID" VARCHAR(65) NOT NULL,
 	"amount" MONEY NOT NULL,
 	"type" BOOLEAN NOT NULL,
 	PRIMARY KEY("id")
@@ -21,12 +21,12 @@ CREATE TABLE IF NOT EXISTS "transactions" (
 
 
 CREATE TABLE IF NOT EXISTS "account" (
-	"id" CHAR(65) NOT NULL UNIQUE,
-	"email" CHAR(50) NOT NULL,
-	"password" CHAR(65) NOT NULL,
-	"fname" CHAR(50) NOT NULL,
-	"lname" CHAR(50) NOT NULL,
-	"mname" CHAR(50),
+	"id" VARCHAR(65) NOT NULL UNIQUE,
+	"email" VARCHAR(50) NOT NULL,
+	"password" VARCHAR(65) NOT NULL,
+	"fname" VARCHAR(50) NOT NULL,
+	"lname" VARCHAR(50) NOT NULL,
+	"mname" VARCHAR(50),
 	PRIMARY KEY("id")
 ) INHERITS ("document");
 
@@ -34,10 +34,10 @@ CREATE TABLE IF NOT EXISTS "account" (
 
 
 CREATE TABLE IF NOT EXISTS "user_info" (
-	"id" CHAR(65) NOT NULL UNIQUE,
-	"fname" CHAR(50) NOT NULL,
-	"lname" CHAR(50) NOT NULL,
-	"mname" CHAR(50),
+	"id" VARCHAR(65) NOT NULL UNIQUE,
+	"fname" VARCHAR(50) NOT NULL,
+	"lname" VARCHAR(50) NOT NULL,
+	"mname" VARCHAR(50),
 	PRIMARY KEY("id")
 ) INHERITS ("document");
 
@@ -45,10 +45,10 @@ CREATE TABLE IF NOT EXISTS "user_info" (
 
 
 CREATE TABLE IF NOT EXISTS "userGroupings" (
-	"id" CHAR(65) NOT NULL UNIQUE,
-	"name" CHAR(50) NOT NULL,
-	"accountID" CHAR(65) NOT NULL,
-	"parent" CHAR(65),
+	"id" VARCHAR(65) NOT NULL UNIQUE,
+	"name" VARCHAR(50) NOT NULL,
+	"accountID" VARCHAR(65) NOT NULL,
+	"parent" VARCHAR(65),
 	PRIMARY KEY("id")
 ) INHERITS ("document");
 
@@ -56,9 +56,9 @@ CREATE TABLE IF NOT EXISTS "userGroupings" (
 
 
 CREATE TABLE IF NOT EXISTS "userMethods" (
-	"id" CHAR(65) NOT NULL UNIQUE,
-	"name" CHAR(50) NOT NULL,
-	"accountID" CHAR(65) NOT NULL,
+	"id" VARCHAR(65) NOT NULL UNIQUE,
+	"name" VARCHAR(50) NOT NULL,
+	"accountID" VARCHAR(65) NOT NULL,
 	PRIMARY KEY("id")
 ) INHERITS ("document");
 
@@ -66,16 +66,15 @@ CREATE TABLE IF NOT EXISTS "userMethods" (
 
 
 CREATE TABLE IF NOT EXISTS "transactionGroups" (
-	"transactionID" CHAR(65) NOT NULL UNIQUE,
-	"groupID" CHAR(65) NOT NULL
+	"transactionID" VARCHAR(65) NOT NULL UNIQUE,
+	"groupID" VARCHAR(65) NOT NULL
 ) INHERITS ("document");
 
 
 
-
 CREATE TABLE IF NOT EXISTS "transactionMethods" (
-	"transactionID" CHAR(65) NOT NULL UNIQUE,
-	"methodID" CHAR(65) NOT NULL
+	"transactionID" VARCHAR(65) NOT NULL UNIQUE,
+	"methodID" VARCHAR(65) NOT NULL
 ) INHERITS ("document");
 
 

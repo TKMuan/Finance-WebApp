@@ -1,6 +1,6 @@
 from flask import Blueprint, request, jsonify
-from src.api import AccountAPI
 from src.db import get_db_connection
+from ..api import AccountAPI
 
 account = Blueprint('account', __name__, url_prefix='/account')
 
