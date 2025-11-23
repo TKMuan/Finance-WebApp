@@ -126,8 +126,8 @@ class Account(Document):
     fname: str
     mname: str
     lname: str
-    required_fields = {'email', 'password', 'fname', 'lname', 'modifying_user'}
-    optional_fields = {'mname'}
+    required_fields: set[str] = {'email', 'password', 'fname', 'lname', 'modifying_user'}
+    optional_fields: set[str] = {'mname'}
 
     @staticmethod
     def from_dict(data: dict):
@@ -153,11 +153,45 @@ class Account(Document):
             "modified_by": self.modified_by,
         }
 
-class Transaction(Document):
+class UserGroups(Document):
+    table: str = '"userGroups"'
+    id: str
+    account_id: str
+    name: str
+    description: str
+    parent: str | None
+    required_fields: set[str] = {'account_id', 'name', 'description', 'modifying_user'}
+
+    
+class UserMethods(Document):
+    table: str = '"userMethods"'
+    id: str
+    account_id: str
+    name: str
+    description: str
+    required_fields: set[str] = {'account_id', 'name', 'description', 'modifying_user'}
+
+class TransactionGroups(Document):
+    table: str = '"transactionGroups"'
+    id: str
+    transaction_id: str
+    group_id: str
+
+class TransactionMethods(Document):
+    table: str = '"transactionMethods"'
+    id: str
+    transaction_id: str
+    method_id: str
+
+class Transactions(Document):    
+    table: str = 'transactions'
     id: str
     account_id: str
     amount: float
     description: str
     transaction_date: datetime
     type: bool
+    transaction_group_id: str
+    transaction_method_id: str
 
+    required_fields: set[str] = {'account_id', 'amount', 'description', 'transaction_date', 'type', 'modifying_user'}
