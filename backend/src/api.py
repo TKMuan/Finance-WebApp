@@ -1,47 +1,48 @@
 import hmac
 import flask_jwt_extended
+import jwt
 from psycopg2.extensions import connection
 from psycopg2 import sql
-from src.errors import UnauthorizedAccess, MissingFieldError
-from src.models import Account, generate_sha256_hash
+from src.errors import UnauthorizedAccess, MissingFieldError, MissingModifyingUser
+from src.errors import ErrorCodes, SuccessCodes, ErrorTypes, SuccessTypes
+from src.models import Account, Document, generate_sha256_hash
 from flask_jwt_extended import create_access_token, create_refresh_token, decode_token
 from enum import Enum
-import bcrypt
+from typing import Union, Type
 
 class APIResponse:
-    def __init__(self, success: bool, code: str, data: dict = None, message: str = None):
+    def __init__(self, success: bool, code: Union[ErrorTypes, SuccessTypes], data: dict = None, message: str = None):
         self.status = success
         self.code = code
         self.data = data
         self.message = message
 
     def to_dict(self):
-        response = {"status": "success" if self.status else "error", "code": self.code}
+        response = {"status": self.status, "code": self.code}
         if self.status:
             response["data"] = self.data
             if self.message:
                 response["message"] = self.message
         else:
-            response["error"] = {"message": self.message}
+            response["message"] = self.message
         return response
 
     @classmethod
-    def success(cls, data: dict = None, message: str = None, code: str = "200"):
+    def success(cls, code: SuccessTypes = None, data: dict = None, message: str = None) -> dict:
+        if not code:
+            code = SuccessCodes.BASE.SUCCESS
         return cls(True, code=code, data=data, message=message).to_dict()
 
     @classmethod
-    def error(cls, code: str, message: str):
+    def error(cls, code: ErrorTypes = None, message: str = None) -> dict:
+        if not code:
+            code = ErrorCodes.BASE.ERROR
         return cls(False, code=code, message=message).to_dict()
 
 
 class JWTAuthAPI:
-
-    class ErrorCode(Enum):
-        REQUIRE_REFRESH = "401"
-        REQUIRE_RE_AUTH = "402"        
-
     @staticmethod
-    def generate_token(user_id: str, user_email: str, fname: str) -> str:
+    def generate_token(user_id: str, user_email: str, fname: str) -> dict:
         additional_claims = {
             "email": user_email,
             "fname": fname
@@ -52,37 +53,89 @@ class JWTAuthAPI:
 
             return APIResponse.success(data={'access_token': access_token, 'refresh_token': refresh_token}, message="Tokens generated successfully.")
         except Exception as e:
-            return APIResponse.error("500", str(e))
+            return APIResponse.error(message=str(e))
 
     @staticmethod
-    def _generate_refresh(id, additional_claims: dict = None) -> str:
+    def _generate_refresh(id, additional_claims: dict = None) -> dict:
         try:
             refreshed_token = create_access_token(identity=id, additional_claims=additional_claims, fresh=False)
-            return APIResponse.success(data={'access_token': refreshed_token}, message="Access token refreshed successfully.")
+            return APIResponse.success(
+                data={'access_token': refreshed_token}, 
+                message="Access token refreshed successfully.", 
+                code=SuccessCodes.JWT.REFRESH_SUCCESS
+                )
         except Exception as e:
-            return APIResponse.error("500", str(e))
+            return APIResponse.error(str(e))
     
     @staticmethod
-    def validate_token(token:str, refresh: bool=False):
+    def validate_token(token:str):
+        if not token:
+            return APIResponse.error(code=ErrorCodes.JWT.INVALID_TOKEN, message="Invalid Token")
         try:
-            decode_token(token, allow_expired=False, refresh=refresh)
-            return APIResponse.success(message="Token validated successfully.")
+            decoded = decode_token(token, allow_expired=False)
+            return APIResponse.success(data=decoded, message="Token validated successfully.", code=SuccessCodes.JWT.VALID_TOKEN)
+
+        except jwt.ExpiredSignatureError:
+            return APIResponse.error(code=ErrorCodes.JWT.EXPIRED_TOKEN, message="Token has Expired")
 
         except Exception as e:
-            return APIResponse.error("401", str(e))
+            return APIResponse.error(message=f"{type(e).__name__} - {str(e)}")
     
     @staticmethod
-    def check_active_login(access_token:str, refresh_token: str):
-        if not access_token:
-            return APIResponse.error(JWTAuthAPI.ErrorCode.REQUIRE_RE_AUTH, "")
+    def check_active_login(conn: connection, access_token: str, refresh_token: str):
         try: 
-            decode_token(access_token, allow_expired=False, refresh=False)
-            return APIResponse.success(message="Active login validated successfully.")
-        except flask_jwt_extended.ExpiredSignatureError:
-            decode_token(refresh_token, allow_expired=False)
-            return APIResponse.error(JWTAuthAPI.ErrorCode.REQUIRE_REFRESH, message="Access token expired, refresh required: " + str(e))
+            code = SuccessCodes.JWT.ACCESS_ACTIVE
+            result = JWTAuthAPI.validate_token(access_token)
+            if not result.get('status'):
+                refresh_result = JWTAuthAPI.validate_token(refresh_token)
+                if not refresh_result.get('status'):
+                    if refresh_result.get('code') == ErrorCodes.JWT.INVALID_TOKEN:
+                        refresh_result['message'] = "Re-authenticate user"
+                    return refresh_result  
+                code = SuccessCodes.JWT.ACCESS_REFRESHED
+                decoded = refresh_result.get('data')
+            else:
+                decoded = result.get("data")
+
+            user_id = decoded.get("sub", "")
+
+            Document.validate_modifying_user(conn, user_id)
+
+            query = sql.SQL("SELECT id, email, fname from {table} WHERE id = %s").format(
+                    table=sql.Identifier(Account.table)
+                    )
+
+            with conn.cursor() as cur:
+                cur.execute(query, (user_id,))
+                result = cur.fetchone() 
+                if not result:
+                    return APIResponse.error(ErrorCodes.DOCUMENT.RECORD_NOT_FOUND, ErrorCodes.DOCUMENT.RECORD_NOT_FOUND.name)
+
+                columns = [desc[0] for desc in cur.description]
+                account_data = dict(zip(columns, result))
+                user_email = account_data.get("email", "")
+                fname = account_data.get("fname", "")
+            
+            additional_claims = {
+                "email": user_email,
+                "fname": fname
+            }
+
+            response = JWTAuthAPI._generate_refresh(user_id, additional_claims)
+            if not response.get('status', ''):
+                return response
+
+            data = response.get('data', {})
+            data['email'] = user_email
+            data['fname'] = fname
+            data['id'] = user_id 
+            return APIResponse.success(code=code, data=data, message="Returned Active User")
+
+        except MissingModifyingUser as e:
+            return APIResponse.error(code=e.code, message=str(e))
+
         except Exception as e:
-            return APIResponse.error(JWTAuthAPI.ErrorCode.REQUIRE_RE_AUTH, message="Re-authentication required: " + str(e))
+            return APIResponse.error("500", str(e))
 
 
 class AccountAPI:
@@ -95,9 +148,48 @@ class AccountAPI:
         return hmac.compare_digest(hash1_bytes, hash2_bytes)
 
     @staticmethod
+    def refresh_access_token(conn: connection, refresh_token: str):
+        try:
+            decoded = decode_token(refresh_token, allow_expired=False)
+            user_id = decoded.get("sub", "")
+            Document.validate_modifying_user(conn, user_id)
+
+            query = sql.SQL("SELECT email, fname FROM {table} WHERE id = %s").format(
+                table=sql.Identifier(Account.table)
+            )
+            with conn.cursor() as cur:
+                cur.execute(query, (user_id,))
+                result = cur.fetchone()
+                if not result:
+                    return APIResponse.error("404", "Account not found.")
+
+                columns = [desc[0] for desc in cur.description]
+                account_data = dict(zip(columns, result))
+                user_email = account_data.get("email", "")
+                fname = account_data.get("fname", "")
+
+            additional_claims = {
+                "email": user_email,
+                "fname": fname
+            }
+
+            # might want to change to generate both access and refresh tokens later 
+            response = JWTAuthAPI._generate_refresh(user_id, additional_claims)
+            if not response.get('status', ''):
+                return response
+
+            data = response.get('data', {})
+            data['email'] = user_email
+            data['fname'] = fname
+            data['id'] = user_id
+            return APIResponse.success(data=data, message="Access token refreshed successfully.")
+
+        except Exception as e:
+            return APIResponse.error("401", str(e))
+    
+    @staticmethod
     def validate_login(conn: connection, email: str, password: str) -> dict:
         try:
-            hashed_password = generate_sha256_hash(password)
             query = sql.SQL("SELECT id, fname, email, password FROM {table} WHERE email = %s").format(
                 table=sql.Identifier(Account.table)
             )
@@ -105,22 +197,28 @@ class AccountAPI:
                 cur.execute(query, (email,))
                 result = cur.fetchone()
                 if not result:
-                    return APIResponse.error("401", "Invalid email or password.")
+                    return APIResponse.error(ErrorCodes.ACCOUNT.INVALID_CREDENTIALS, "Invalid email or password.")
 
                 columns = [desc[0] for desc in cur.description]
                 account_data = dict(zip(columns, result))
                 stored_password = account_data.pop("password")
+                hashed_password = generate_sha256_hash(password)
 
                 if not AccountAPI.safe_compare_hashes(stored_password, hashed_password):
-                    return APIResponse.error("401", "Invalid email or password.")
+                    return APIResponse.error(code=ErrorCodes.ACCOUNT.INVALID_CREDENTIALS, message="Invalid email or password.")
 
                 jwt_tokens = JWTAuthAPI.generate_token(
                     user_id=account_data.get("id"),
                     user_email=account_data.get("email"),
                     fname=account_data.get("fname")
                 )
-
-                return APIResponse.success(data=jwt_tokens, message="Login successful.")
+                if jwt_tokens.get("status") is False:
+                    return APIResponse.error(jwt_tokens.get("code"), jwt_tokens.get("error"))
+                data = jwt_tokens.get("data", {})
+                data['email'] = account_data.get("email")
+                data['fname'] = account_data.get("fname")
+                data['id'] = account_data.get("id")
+                return APIResponse.success(data=data, message="Login successful.")
 
 
         except Exception as e:
@@ -193,8 +291,25 @@ class AccountAPI:
 
     @staticmethod
     def update_account(conn: connection, updated: dict, id: str) -> dict:
+        #to be implemented 
         pass
 
     @staticmethod
     def delete_account(conn: connection, id: str) -> dict:
+        #to be implemented 
+        pass
+
+class TransactionAPI:
+    @staticmethod
+    def create_transaction(conn: connection, user_id: str, ) -> dict:
+        pass
+
+    @staticmethod
+    def update_transaction(conn: connection, updated: dict, id: str) -> dict:
+        #to be implemented 
+        pass
+
+    @staticmethod
+    def delete_transaction(conn: connection, id: str) -> dict:
+        #to be implemented 
         pass
