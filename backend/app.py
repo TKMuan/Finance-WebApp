@@ -6,17 +6,25 @@ from src.blueprints.auth import auth
 from src.db import get_db_connection
 from dotenv import load_dotenv
 from datetime import timedelta
-
+from flask_cors import CORS
 load_dotenv()
 
 app = Flask(__name__)
+cors_origins = os.getenv('CORS_ALLOWED_ORIGINS', '')
+origins_list = [origin.strip() for origin in cors_origins.split(',') if origin.strip()]
+
+CORS(app, supports_credentials=True, resources={
+    r"/*": {
+        "origins": origins_list
+    }
+})
 app.register_blueprint(account)
 app.register_blueprint(auth)
 
 
 app.config['JWT_SECRET_KEY'] = os.getenv('JWT_SECRET_KEY')
-app.config['JWT_ACCESS_TOKEN_EXPIRES'] = timedelta(minutes=15)
-app.config['JWT_REFRESH_TOKEN_EXPIRES'] = timedelta(days=30)
+app.config['JWT_ACCESS_TOKEN_EXPIRES'] = timedelta(seconds=int(os.getenv("JWT_ACCESS_TOKEN_EXPIRES", 900)))  # in seconds
+app.config['JWT_REFRESH_TOKEN_EXPIRES'] = timedelta(seconds=int(os.getenv("JWT_REFRESH_TOKEN_EXPIRES", 2592000)))  # in seconds
 
 jwt = JWTManager(app)
 
