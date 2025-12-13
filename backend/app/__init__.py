@@ -1,0 +1,72 @@
+from flask import Flask, jsonify, request
+from flask_jwt_extended import jwt_required
+from .config import DevelopmentConfig
+from .extensions import jwt, cors
+from routes import (
+    auth_routes
+)
+from services import (
+    AccountService
+)
+from repositories import (
+    AccountRepo
+)
+from src.db import get_db_connection
+from .types import AccountServiceProtocol
+
+def create_app(config_class=DevelopmentConfig):
+    app = Flask(__name__)
+    app.config.from_object(config_class)
+    
+    # Init extensions
+    jwt.init_app(app)
+    cors.init_app(app, supports_credentials=True, 
+                  resources={r"/*": {"origins": config_class.CORS_ALLOWED_ORIGINS.split(',')}})
+    
+    # Register services as app attributes
+    db_conn = get_db_connection
+    account_repo = AccountRepo()
+    
+    app.account_service = AccountService(account_repo)
+    app.db_conn = db_conn
+
+    # Register blueprints
+    app.register_blueprint(auth_routes.auth)
+    """
+    app.register_blueprint(account)
+    app.register_blueprint(ugroupings)
+    app.register_blueprint(tgroupings)
+    app.register_blueprint(transactions)
+    """
+    
+    # Global request handlers
+    @app.before_request
+    def handle_options():
+        if request.method == 'OPTIONS':
+            response = jsonify()
+            response.status_code = 200
+            response.headers.add("Access-Control-Allow-Origin", "http://localhost:5173")
+            response.headers.add("Access-Control-Allow-Headers", "Content-Type,Authorization")
+            response.headers.add("Access-Control-Allow-Methods", "GET,POST,PUT,DELETE,OPTIONS")
+            response.headers.add("Access-Control-Allow-Credentials", "true")
+            return response
+    
+    # Debug route (move to blueprint later)
+    @jwt_required()
+    @app.route('/debug/tables')
+    def debug_tables():
+        conn = get_db_connection()
+        try:
+            cur = conn.cursor()
+            cur.execute("""
+                SELECT tablename
+                FROM pg_tables
+                WHERE schemaname = 'public';
+            """)
+            tables = [row[0] for row in cur.fetchall()]
+            return jsonify(tables)
+        finally:
+            cur.close()
+            conn.close()
+    
+    return app
