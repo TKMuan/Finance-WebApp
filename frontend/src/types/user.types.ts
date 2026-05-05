@@ -1,9 +1,9 @@
 export interface User{
     id: string,
     fname: string,
-    lname: string,
-    mname: string
+    email: string
 }
+
 
 export interface Account{
     id: string,
@@ -13,6 +13,8 @@ export interface Account{
     lname: string,
     mname: string
 }
+
+export type LoginCredentials = Omit<Account, "id" | "fname" | "lname" | "mname">;
 
 export type CreateUserInput = Omit<Account, 'id'>
 
