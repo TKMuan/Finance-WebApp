@@ -36,8 +36,8 @@ if __name__ == "__main__":
     db_url = os.getenv("DATABASE_URL")
     with connect(
         host=os.getenv("DB_HOST"),
-        database=os.getenv("DB_NAME").lower(),
-        user=os.getenv("DB_USER").lower(),
+        database=os.getenv("DB_NAME"),
+        user=os.getenv("DB_USER"),
         password=os.getenv("DB_PASSWORD"),
         port=os.getenv("DB_PORT")
     ) as conn:

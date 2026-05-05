@@ -5,15 +5,13 @@ from flask import (
     make_response ,
     current_app
 )
-from flask_cors import (
-    CORS
-)
 from src.db import (
     get_db_connection
 )
 from errors import (
     AuthError,
-    MissingFieldError
+    MissingFieldError,
+    InvalidCredentials
 )
 from models import (
     Account
@@ -36,9 +34,6 @@ JWT_ACCESS_TOKEN_EXPIRES = int(os.getenv("JWT_ACCESS_TOKEN_EXPIRES", 900))  # in
 JWT_REFRESH_TOKEN_EXPIRES = int(os.getenv("JWT_REFRESH_TOKEN_EXPIRES", 2592000))  # in minutes
 
 auth = Blueprint('auth', __name__, url_prefix='/auth')
-cors_origins = os.getenv('CORS_ALLOWED_ORIGINS', '')
-origins_list = [origin.strip() for origin in cors_origins.split(',') if origin.strip()]
-CORS(auth, supports_credentials=True, resources={r"/*": {"origins": origins_list}})
 
 @auth.route('/cookie/active', methods=['POST'])
 def check_active_login():
@@ -46,11 +41,25 @@ def check_active_login():
         access_token = request.cookies.get('access_token_cookie', "")
         refresh_token = request.cookies.get('refresh_token_cookie', "")
 
+        if not access_token and not refresh_token:
+            return APIUtil.success_response(
+                code=SuccessCodes.BASE,
+                data={
+                    "active": False,
+                    "refreshed": False,
+                    "token": "",
+                    "id": "",
+                    "name": "",
+                    "email": ""
+                },
+                message="No active session"
+            )
+
         with get_db_connection() as conn:
             response = current_app.account_service.check_active_login(conn, access_token, refresh_token)
         print("response: ", response)
 
-        refreshed = response.pop('refreshed')
+        refreshed = response.pop('refreshed', False)
         tokens = response.pop('token', "") 
         res, code = APIUtil.success_response(
             code=SuccessCodes.ACCESS_REFRESHED,
@@ -71,14 +80,15 @@ def check_active_login():
 
     except AuthError as ae:
         return APIUtil.error_response(
-            code= ae.code, 
-            messsage= str(e)
-            )
+            code=ae.code,
+            message=str(ae)
+        )
 
     except Exception as e:
-        return make_response(
-            code = ErrorCodes.BAD_REQUEST, 
-            message = str(e))
+        return APIUtil.error_response(
+            code=ErrorCodes.BAD_REQUEST,
+            message=str(e)
+        )
 
 
 @auth.route('/login', methods=['POST'])
@@ -118,6 +128,8 @@ def login():
             )
             return res, code
 
+    except InvalidCredentials as ice:
+        return APIUtil.success_response(code=ice.code, data=None, message=str(ice))
     except MissingFieldError as mfe:
         return APIUtil.error_response(code=mfe.code, message = str(mfe))
         
@@ -125,10 +137,9 @@ def login():
     except Exception as e:
         return APIUtil.error_response(code=ErrorCodes.BAD_REQUEST, message = str(e))
 
-@auth.route('/new', methods=['POST'])
+@auth.route('/create', methods=['POST'])
 def create_account():
     try:
-
         with get_db_connection() as conn:
             data = request.json
             service = current_app.account_service
