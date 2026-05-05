@@ -3,9 +3,6 @@ import {Button, Flex, Grid, Text, DropdownMenu, Box} from "@radix-ui/themes"
 const generateMonthGrid = (year: number, month: number) => {
     const firstDayIndex = new Date(year, month, 1).getDay();
     const totalDays = new Date(year, month+1, 0).getDate();
-    console.log("year month: ", year, month)
-    console.log("total days: ", totalDays)
-    console.log("first day index: ", firstDayIndex)
     const grid: (string)[] = [];
 
     for (let i = 0; i < firstDayIndex; i++) {
@@ -15,8 +12,6 @@ const generateMonthGrid = (year: number, month: number) => {
     for (day = 1; day <= totalDays; day++) {
         grid.push(day.toString());
     }
-    console.log("passed days: ", day)
-    console.log(grid)
     return grid;
 };
 interface DateObj { 
@@ -35,7 +30,7 @@ export const DateSelection = ({ value, onChange }: DateSelectionProps) => {
     return (
         <DropdownMenu.Root>
             <DropdownMenu.Trigger>
-                <Button variant="outline">{year} / {month} / {day}</Button>
+                <Button variant="outline">{year} / {month + 1} / {day}</Button>
             </DropdownMenu.Trigger>
             <DropdownMenu.Content className="w-full bg-white rounded-md shadow-lg p-2">
                 <Flex gap='2' direction='column' className="w-full px-4 py-2 items-center justify-center">
@@ -46,11 +41,11 @@ export const DateSelection = ({ value, onChange }: DateSelectionProps) => {
                     </Box>
                     <DropdownMenu.Separator className="w-full my-1 border-t" />
                     <Box className="w-full flex content-center justify-center">
-                        <Button className="select_button" onClick={() => onChange({year: year, month: month + 1, day: day})} disabled={month === 0}>
+                        <Button className="select_button" onClick={() => onChange({year: year, month: month - 1, day: day})} disabled={month === 0}>
                             {"<"}
                         </Button>
                         <Text className='px-4'>{months[month]}</Text>
-                        <Button className="select_button" onClick={() => onChange({year: year, month: month - 1, day: day})} disabled={month === 11}>
+                        <Button className="select_button" onClick={() => onChange({year: year, month: month + 1, day: day})} disabled={month === 11}>
                             {">"}
                         </Button>
                     </Box>
