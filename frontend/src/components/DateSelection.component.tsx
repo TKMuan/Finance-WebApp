@@ -38,19 +38,19 @@ export const DateSelection = ({ value, onChange }: DateSelectionProps) => {
                 <Button variant="outline">{year} / {month} / {day}</Button>
             </DropdownMenu.Trigger>
             <DropdownMenu.Content className="w-full bg-white rounded-md shadow-lg p-2">
-                <Flex gap='2' direction='column' className="w-full px-4 py-2">
-                    <Box className="w-full flex items-center justify-center">
-                        <Button onClick={() => onChange({year: year - 1, month: month, day: day})}> {"<"}</Button>
+                <Flex gap='2' direction='column' className="w-full px-4 py-2 items-center justify-center">
+                    <Box className="w-full items-center justify-center">
+                        <Button className="select_button" onClick={() => onChange({year: year - 1, month: month, day: day})}> {"<"}</Button>
                         <Text className='px-4'>{year}</Text>
-                        <Button onClick={() => onChange({year: year + 1, month: month, day: day})}> {">"}</Button>
+                        <Button className="select_button" onClick={() => onChange({year: year + 1, month: month, day: day})}> {">"}</Button>
                     </Box>
                     <DropdownMenu.Separator className="w-full my-1 border-t" />
-                    <Box className="w-full flex items-center justify-center">
-                        <Button onClick={() => onChange({year: year, month: month + 1, day: day})} disabled={month === 0}>
+                    <Box className="w-full flex content-center justify-center">
+                        <Button className="select_button" onClick={() => onChange({year: year, month: month + 1, day: day})} disabled={month === 0}>
                             {"<"}
                         </Button>
                         <Text className='px-4'>{months[month]}</Text>
-                        <Button onClick={() => onChange({year: year, month: month - 1, day: day})} disabled={month === 11}>
+                        <Button className="select_button" onClick={() => onChange({year: year, month: month - 1, day: day})} disabled={month === 11}>
                             {">"}
                         </Button>
                     </Box>
