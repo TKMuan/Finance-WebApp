@@ -4,14 +4,16 @@ from . account_service import (
 from .user_grouping_services import (
     UserGroups 
 )
-from . import user_methods_services
+from .user_methods_services import (
+    MethodsService
+)
 from . import transaction_services
 from . import transaction_groups_services
 from . import transaction_method_services
 
 __all__ = [
     "AccountService",
-    "transaction_services",
+    "MethodsService",
     "transaction_groups_services",
     "transaction_method_services",
     "user_grouping_services",
