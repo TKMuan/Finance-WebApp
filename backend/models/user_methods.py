@@ -1,19 +1,35 @@
-from .document import Document
+from .base import BaseModel
+from datetime import datetime
+from dataclasses import dataclass
+from typing import (
+    Optional,
+    ClassVar
+)
 
-class UserMethods(Document):
-    table: str = '"userMethods"'
-    required_fields: set[str] = {'account_id', 'name', 'modifying_user'}
-    optional_fields: set[str] = {'description'} 
+@dataclass
+class UserMethods(BaseModel):
+    table: ClassVar[str] = 'userMethods'
+    required_fields: ClassVar[set[str]] = {
+        'id'
+        'accountID', 
+        'name', 
+        'modified_by',
+        'modified',
+        'created'
+        }
+    optional_fields: ClassVar[set[str]] = {} 
+    columns: ClassVar[tuple[str]] = (
+        'id',
+        'accountID',
+        'name',
+        'modified_by',
+        'modified',
+        'created'
+    )
 
-
-    def __init__(
-            self,
-            id: str = "",
-            account_id: str = "",
-            name: str = "",
-            description: str = ""
-            ):
-        self.id: str = id
-        self.account_id: str = account_id
-        self.name: str = name
-        self.description: str = description
+    id: str
+    accountID: str
+    name: str
+    modified_by: str
+    created: datetime
+    modified: datetime
