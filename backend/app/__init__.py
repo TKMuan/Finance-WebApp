@@ -3,18 +3,24 @@ from flask_jwt_extended import jwt_required
 from .config import DevelopmentConfig
 from .extensions import jwt, cors
 from routes import (
-    auth_routes
+    auth_routes,
+    method_routes
 )
 from services import (
-    AccountService
+    AccountService,
+    MethodsService
 )
 from repositories import (
-    AccountRepo
+    AccountRepo,
+    MethodsRepo
 )
-from src.db import get_db_connection
-from .types import AccountServiceProtocol
+from db import get_db_connection
+from app.logger import setup_logging
 
 def create_app(config_class=DevelopmentConfig):
+
+    setup_logging() 
+
     app = Flask(__name__)
     app.config.from_object(config_class)
     
@@ -25,13 +31,18 @@ def create_app(config_class=DevelopmentConfig):
     
     # Register services as app attributes
     db_conn = get_db_connection
+
     account_repo = AccountRepo()
-    
-    app.account_service = AccountService(account_repo)
+    methodsRepo = MethodsRepo()
+    app.AccountService = AccountService(account_repo)
+    app.MethodService = MethodsService(methodsRepo)
+
     app.db_conn = db_conn
 
     # Register blueprints
     app.register_blueprint(auth_routes.auth)
+    app.register_blueprint(method_routes.MethodBluePrint)
+
     """
     app.register_blueprint(account)
     app.register_blueprint(ugroupings)
