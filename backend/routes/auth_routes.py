@@ -27,11 +27,14 @@ from utils import (
     APIUtil
 )
 import os
+import logging
 
 env = load_dotenv()
 
 JWT_ACCESS_TOKEN_EXPIRES = int(os.getenv("JWT_ACCESS_TOKEN_EXPIRES", 900))  # in minutes
 JWT_REFRESH_TOKEN_EXPIRES = int(os.getenv("JWT_REFRESH_TOKEN_EXPIRES", 2592000))  # in minutes
+
+logger = logging.getLogger(__name__)
 
 auth = Blueprint('auth', __name__, url_prefix='/auth')
 
@@ -56,7 +59,7 @@ def check_active_login():
             )
 
         with get_db_connection() as conn:
-            response = current_app.account_service.check_active_login(conn, access_token, refresh_token)
+            response = current_app.AccountService.check_active_login(conn, access_token, refresh_token)
         print("response: ", response)
 
         refreshed = response.pop('refreshed', False)
@@ -99,7 +102,7 @@ def login():
             print("Login data received:", data)
             required_fields = {'email', 'password'}
             Account.check_required_fields(data=data, required_fields=required_fields)
-            result = current_app.account_service.login(conn, data.get('email', ''), data.get('password', ''))
+            result = current_app.AccountService.login(conn, data.get('email', ''), data.get('password', ''))
             print("result: ", result)
             tokens = result.pop('tokens')
 
@@ -142,7 +145,7 @@ def create_account():
     try:
         with get_db_connection() as conn:
             data = request.json
-            service = current_app.account_service
+            service = current_app.AccountService
             account = service.create_account(conn, data)
             return APIUtil.success_response(SuccessCodes.BASE, account, 'Account Created')
     except Exception as e:
