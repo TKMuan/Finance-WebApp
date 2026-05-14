@@ -1,5 +1,6 @@
 from .connection import (
-    transaction
+    transaction,
+    get_db_connection
 )
 
 __all__ = [
