@@ -1,0 +1,9 @@
+@import "tailwindcss";
+
+.method_delete_button{
+    @apply bg-transparent text-black
+}
+
+.select_button{
+    @apply bg-transparent text-black
+}
