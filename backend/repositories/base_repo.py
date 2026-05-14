@@ -26,9 +26,11 @@ from models import (
 from errors import (
     MissingDocumentID
 )
+import logging
+
+logger = logging.getLogger(__name__)
 
 class BaseRepo(ABC):
-
     @abstractmethod
     def _get_table(self) -> str:
         """Model-specific table name."""
@@ -65,6 +67,26 @@ class BaseRepo(ABC):
         )
         return query
 
+    def sql_delete(self, where_conditions: dict[str, Any]):
+        where_clauses = []
+        params = []
+        logger.debug(f"Recieved where conditions: {where_conditions}")
+        where_clauses.extend(
+            sql.SQL("{} = %s").format(sql.Identifier(col)) for col in where_conditions
+        )
+        logger.debug(f"where clauses: {where_clauses}")
+        where_clause = sql.SQL(" AND ").join(where_clauses)
+        params.extend(where_conditions.values())
+
+        from_clause = sql.SQL("DELETE FROM {table}").format(
+            table=sql.Identifier(self._get_table())
+        )
+
+        query = sql.SQL(" ").join([from_clause, sql.SQL(" WHERE {where}").format(
+            where=where_clause)])
+
+        return query, params
+
     def sql_select(self, columns: list[str] | None = None, 
                 where_conditions: dict[str, Any] | None = None,
                 key_column: str = 'id',
@@ -86,7 +108,7 @@ class BaseRepo(ABC):
         # WHERE clause
         where_clauses = []
         params = []
-        
+        print(f"\n\nn\DEBUG: {where_conditions}\n\n\n") 
         if where_conditions:
             where_clauses.extend(
                 sql.SQL("{} = %s").format(sql.Identifier(col)) for col in where_conditions
@@ -108,7 +130,6 @@ class BaseRepo(ABC):
             from_clause=from_clause
         )]
         query_params = [select_fields, from_clause]
-        
         if where_clause:
             query_parts.append(sql.SQL("WHERE {where_clause}").format(
                 where_clause=where_clause
@@ -124,7 +145,6 @@ class BaseRepo(ABC):
             query_parts.append(sql.SQL("OFFSET %s"))
             params.append(offset)
         query = sql.SQL(" ").join(query_parts)
-
         return query, params 
 
     def insert(self, conn: connection, model: BaseModel, columns: Optional[list[str]] = None) -> None:
