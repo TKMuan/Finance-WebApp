@@ -11,8 +11,7 @@ export interface ApiError {
 }
 
 export type Pagination<T> = {
-  items: T[];
-  total: number;
+  data: T[];
   page: number;
   limit: number;
 };

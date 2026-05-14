@@ -2,7 +2,7 @@ const API_BASE = import.meta.env.VITE_API_URL || "http://localhost:5173";
 const BACKEND_API = import.meta.env.VITE_BACKEND_API || "http://localhost:5000";
 
 export const checkActiveSessionApi = async () => {
-  const response = await fetch(`${BACKEND_API}auth/cookie/active`, { 
+  const response = await fetch(`${BACKEND_API}/auth/cookie/active`, { 
     method: "POST", 
     credentials: "include" 
   });
@@ -11,7 +11,7 @@ export const checkActiveSessionApi = async () => {
 };
 
 export const registerApi = async (email: string, password: string, fname: string, lname: string) => {
-  const response = await fetch(`${BACKEND_API}auth/create`, {
+  const response = await fetch(`${BACKEND_API}/auth/create`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ email, password, fname, lname })
@@ -21,7 +21,8 @@ export const registerApi = async (email: string, password: string, fname: string
 }
 
 export const loginApi = async (email: string, password: string) => {
-  const response = await fetch(`${BACKEND_API}auth/login`, {
+
+  const response = await fetch(`${BACKEND_API}/auth/login`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     credentials: "include",
@@ -33,7 +34,7 @@ export const loginApi = async (email: string, password: string) => {
 };
 
 export const logoutApi = async () => {
-  const response = await fetch(`${BACKEND_API}auth/logout`, { 
+  const response = await fetch(`${BACKEND_API}/auth/logout`, { 
     method: "POST", 
     credentials: "include" 
   });

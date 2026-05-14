@@ -2,6 +2,7 @@ import { Box, Flex, Text, TextField, Button, Card } from '@radix-ui/themes'
 import { useState } from 'react'
 import type { CreateUserInput, LoginCredentials } from '../types'
 import { useAuth } from '../hooks'
+import { useNavigate, useSearchParams } from 'react-router-dom'
 
 interface RegisterError{
     fname: string,
@@ -15,6 +16,9 @@ type LoginError = Omit<RegisterError, 'fname'>
 export const AuthPage = () => {
 
     const { login, register, error, loading} = useAuth()
+
+    const navigate = useNavigate()
+    const [searchParams] = useSearchParams()
 
     const [RegError, setRegError] = useState<RegisterError >({email: "", password: "", fname: ""} as RegisterError)
     const [LoginError, setLoginError] = useState<LoginError >({email: "", password: ""} as LoginError)
@@ -40,6 +44,7 @@ export const AuthPage = () => {
         }
         console.log("Login credentials: ", credentials)
         login(credentials.email, credentials.password);
+        navigate(searchParams.get('from')||"/dashboard", {"replace": true})
     }
 
     const onSubmitRegister = (credentials: CreateUserInput) => {
