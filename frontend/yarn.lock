@@ -1396,6 +1396,18 @@
     "@tailwindcss/oxide" "4.1.17"
     tailwindcss "4.1.17"
 
+"@tanstack/query-core@5.100.9":
+  version "5.100.9"
+  resolved "https://registry.yarnpkg.com/@tanstack/query-core/-/query-core-5.100.9.tgz#dcf44ef25cf42a4da229bcab1d8d33e80a740a99"
+  integrity sha512-SJSFw1S8+kQ0+knv/XGfrbocWoAlT7vDKsSImtLx3ZPQmEcR46hkDjLSvynSy25N8Ms4tIEini1FuBd5k7IscQ==
+
+"@tanstack/react-query@^5.100.9":
+  version "5.100.9"
+  resolved "https://registry.yarnpkg.com/@tanstack/react-query/-/react-query-5.100.9.tgz#0c701bf56f38b484602255a92d4c9e452a04807d"
+  integrity sha512-Oa44XkaI3kCNN6ME0KByU3xT3SEUNOMfZpHxL6+wFoTm+OeUFYHKdeYVe0aOXlRDm/f15sgLwEt2HDorIdW8+A==
+  dependencies:
+    "@tanstack/query-core" "5.100.9"
+
 "@tybys/wasm-util@^0.10.1":
   version "0.10.1"
   resolved "https://registry.yarnpkg.com/@tybys/wasm-util/-/wasm-util-0.10.1.tgz#ecddd3205cf1e2d5274649ff0eedd2991ed7f414"
@@ -2238,10 +2250,10 @@ lru-cache@^5.1.1:
   dependencies:
     yallist "^3.0.2"
 
-lucide@^0.553.0:
-  version "0.553.0"
-  resolved "https://registry.yarnpkg.com/lucide/-/lucide-0.553.0.tgz#c14f61804bcd9db155997967c76506bb8e14270b"
-  integrity sha512-zdU8nM8mTqFUE6uBP+ncZRN+CTONxwhZbOL2dy+7gINRb1/6zCNQnv6nqpdSrEy5/gy/aJj6FxWHO8WdQgfN0g==
+lucide-react@^1.14.0:
+  version "1.14.0"
+  resolved "https://registry.yarnpkg.com/lucide-react/-/lucide-react-1.14.0.tgz#3c3867749f5ff4eeb5a6f423557ec6a50521366f"
+  integrity sha512-+1mdWcfSJVUsaTIjN9zoezmUhfXo5l0vP7ekBMPo3jcS/aIkxHnXqAPsByszMZx/Y8oQBRJxJx5xg+RH3urzxA==
 
 magic-string@^0.30.21:
   version "0.30.21"

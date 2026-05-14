@@ -14,7 +14,7 @@ const generateMonthGrid = (year: number, month: number) => {
     }
     return grid;
 };
-interface DateObj { 
+export interface DateObj { 
     year: number, 
     month: number,
     day: number
