@@ -7,8 +7,12 @@ from .account_repo import (
 from .methods_repo import (
     MethodsRepo
 )
+from .group_repo import (
+    UserGroupRepo
+)
 __all__ = [
     "BaseRepo",
     "AccountRepo",
-    "MethodsRepo"
+    "MethodsRepo",
+    "UserGroupRepo"
 ]

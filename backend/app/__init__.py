@@ -4,15 +4,19 @@ from .config import DevelopmentConfig
 from .extensions import jwt, cors
 from routes import (
     auth_routes,
-    method_routes
+    method_routes,
+    MethodBluePrint,
+    UserGroupingBlueprint
 )
 from services import (
     AccountService,
-    MethodsService
+    MethodsService,
+    UserGroupingService
 )
 from repositories import (
     AccountRepo,
-    MethodsRepo
+    MethodsRepo,
+    UserGroupRepo
 )
 from db import get_db_connection
 from app.logger import setup_logging
@@ -34,14 +38,17 @@ def create_app(config_class=DevelopmentConfig):
 
     account_repo = AccountRepo()
     methodsRepo = MethodsRepo()
+    groupsRepo = UserGroupRepo()
     app.AccountService = AccountService(account_repo)
     app.MethodService = MethodsService(methodsRepo)
+    app.GroupsService = UserGroupingService(groupsRepo)
 
     app.db_conn = db_conn
 
     # Register blueprints
     app.register_blueprint(auth_routes.auth)
-    app.register_blueprint(method_routes.MethodBluePrint)
+    app.register_blueprint(MethodBluePrint)
+    app.register_blueprint(UserGroupingBlueprint)
 
     """
     app.register_blueprint(account)

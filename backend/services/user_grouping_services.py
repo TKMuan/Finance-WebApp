@@ -1,9 +1,15 @@
+from psycopg2 import (
+    sql
+)
 from psycopg2.extensions import (
     connection
 )
 from models import (
     BaseModel,
     UserGroups
+)
+from repositories import (
+    UserGroupRepo 
 )
 from enums import (
     ErrorCodes
@@ -12,91 +18,144 @@ from errors import (
     ValidationError,
     MissingChildValue
 )
+from db import (
+    transaction
+)
+from datetime import (
+    datetime
+)
+from utils import (
+    CryptoUtil
+)
+from typing import (
+    Any
+)
+import logging
 
-def create_grouping(conn: connection, data: dict):
-    children = data.pop('children', [])
+logger = logging.getLogger(__name__)
 
-    if not children:
-        raise MissingChildValue("Parent Grouping needs to have at least one child")
+class UserGroupingService:
+    def __init__(self, repo: UserGroupRepo):
+        self.repo = repo
 
-    UserGroups.check_required_fields(data, UserGroups.required_fields - {"id"})
-    UserGroups.check_extra_fields(data, UserGroups.allowed_fields())
+    def validate_creation_fields(self, input_fields: set[str]):
+        UserGroups.check_required_fields(input_fields)
 
-    new_group = UserGroups(**data)
-    UserGroups.validate_parent_group(conn, new_group.parent)
-    new_group.create_id()            
+    def create_grouping(self, conn: connection, data: dict):
 
-    new_group.insert(conn)
-    for child in children:
-        child['parent'] = new_group.id
-        child['accountID'] = new_group.accountID
-        child['modified_by'] = new_group.modified_by
-        child_obj = UserGroups(**child) 
-        child_obj.insert(conn)
-        child_obj.save(conn)
+        logger.debug(f"Recieved data: {data}") 
+        children = data.pop('children', [])
 
-    return new_group.to_dict()
+        if not children:
+            raise MissingChildValue("Parent Grouping needs to have at least one child")
 
+        logger.debug(f"parent: {data}")
+        logger.debug(f"children: {children}")
+        
+        data["created"] = datetime.now()
+        data["modified"] = data["created"]
+        data['modified_by'] = data['accountID']
+        data['parent'] = None
+        data['id'] = CryptoUtil.generate_sha256_hash(str(data['created']) + data['name'])
 
+        parent_group = UserGroups(**data)
+        logger.debug(f"parent information: {parent_group.__dict__}")
 
-def get_user_groups(conn: connection, account_id: str, page_size=10, page_number=1):
-    try:
-        offset = (page_number - 1) * page_size
-        query = sql.SQL("""
-            SELECT p.id, p.name,
-                COALESCE(
-                    array_agg(json_build_object('id', c.id, 'name', c.name)) FILTER (WHERE c.id IS NOT NULL),
-                    '{{}}'
-                    ) AS children
-            FROM {table_p} p
-            LEFT JOIN {table_c} c ON c.parent = p.id
-            WHERE p."accountID" = %s AND p.parent is null
-            GROUP BY p.id, p.name
-            LIMIT %s OFFSET %s;
-        """).format(
-            table_p=sql.Identifier(UserGroups.table),
-            table_c=sql.Identifier(UserGroups.table)
-        )
-        with conn.cursor(cursor_factory=extras.RealDictCursor) as cur:
-            cur.execute(query, (account_id, page_size + 1, offset))
-            rows = cur.fetchall()
+        with transaction(conn) as trans:
+            self.repo.insert(trans, parent_group)
+            logger.debug("Parent inserted")
+            child_created = datetime.now()
+            for child in children:
+                child['id'] = CryptoUtil.generate_sha256_hash(str(child_created) + child['name'])
+                child['parent'] = data['id']
+                child["created"] = child_created
+                child["modified"] = child_created
+                child['modified_by'] = data['accountID']
+                child['accountID'] = data['accountID']
 
-        result = {
-            'data': rows[:page_size],
-            'page': page_number,
-            'nextPage': len(rows) > page_size,
-            'pageSize': page_size
-        }
-        return APIResponse.success(code=SuccessCodes.GROUPINGS.RETRIEVED, data=result, message="Successfully retrieved user groups")
-    except Exception as e:
-        return APIResponse.error(code=ErrorCodes.BASE.ERROR, message=str(e))
+                logger.debug(f"child data: {child}")
+                tempChild = UserGroups(**child)
+                logger.debug(f"child information: {tempChild.__dict__}")
+                self.repo.insert(trans, tempChild)
+                logger.debug("Child inserted")
 
+    def update_grouping(self, conn: connection, data: dict):
+        logger.debug(f"Recieved data: {data}") 
+        children = data.pop('children', [])
+        deletions = data.pop('deletions', [])
 
-def get_parent_groups(conn: connection, account_id: str):
-    try:
-        query = sql.SQL("SELECT id, name FROM {table} WHERE parent is null AND \"accountID\" = %s").format(
-            table=sql.Identifier(UserGroups.table)
-        )
-        print("query: ", query.as_string(conn))
-        with conn.cursor(cursor_factory=extras.RealDictCursor) as cur:
-            cur.execute(query, (account_id, ))
-            rows = cur.fetchall()
-            print("rows: ", rows)
-
-            return APIResponse.success(code=SuccessCodes.BASE.SUCCESS, data=rows) 
-
-    except Exception as e:
-        return APIResponse.error(code=ErrorCodes.BASE.ERROR, message=str(e))
+        if not children:
+            raise MissingChildValue("Parent Grouping needs to have at least one child")
 
 
-def get_children(conn: connection, parent_id):
-    try:
-        key_column = {"parent": parent_id}
-        fields = {"id", "name"}
-        query = UserGroups.sql_select(key_column=key_column, req_fields=fields)
-        with conn.cursor(cursor_factory=extras.RealDictCursor) as cur:
-            cur.execute(query, (parent_id, ))
-            rows = cur.fetchall()
-        return APIResponse.success(code=SuccessCodes.BASE.SUCCESS, data=rows) 
-    except Exception as e:
-        return APIResponse.error(code=ErrorCodes.BASE.ERROR, message=str(e))
+        logger.debug(f"parent: {data}")
+        logger.debug(f"children: {children}")
+
+        with transaction(conn) as trans:
+            self.repo.update_user_group(trans, data['accountID'], data['name'], data['id'])
+
+            child_time = datetime.now()
+            for child in children:
+                cid = child.get("id", None)
+                if not cid:
+                    child['id'] = CryptoUtil.generate_sha256_hash(str(child_time) + child['name'])
+                    child['created'] = child_time
+                    child['modified'] = child_time
+                    child['modified_by'] = data['accountID']
+                    child['accountID'] = data['accountID']
+                    child['parent'] = data['id']
+
+                    logger.debug(f"Child record: {child}")
+                    childObj = UserGroups(**child)
+                    self.repo.insert(trans, childObj)
+                else:
+                    self.repo.update_user_group(trans, data['accountID'], child['name'], child['id'])
+            
+            for cid in deletions:
+                self.repo.delete_user_group(conn, data['accountID'], cid)
+
+        return
+    
+    def get_user_group(self, conn: connection, accountID: str, id: str):
+
+        data = self.repo.get_user_group(conn, accountID, id)
+
+        children = self.repo.get_children(conn, accountID, data['id'])
+        if children:
+            data['children'] = children
+        logger.debug(f"recieved data: {data}")
+
+        return data
+
+    def get_all_user_groups(self, conn: connection, accountID: str, limit: int, page: int):
+
+        logger.debug(f"accountID: {accountID}")
+        logger.debug(f"limit: {limit}")
+        logger.debug(f"page: {page}")
+        
+        limit = int(limit)
+        page = int(page)
+
+        data = self.repo.get_all_user_groups(conn, accountID, limit, page * limit)
+
+        logger.debug(f"retrieved data: {data}")
+        for record in data:
+            children = self.repo.get_children(conn, accountID, record['id'])
+            logger.debug(f"retrieved child: {children}")
+            if children:
+                record['children'] = children
+
+        logger.debug(f"recieved data: {data}")
+
+        return data
+
+    def delete_user_grouping(self, conn: connection,  id: str, accountID: str):
+        try: 
+            success = self.repo.delete_user_group(conn, accountID, id)
+            if not success: 
+                raise RuntimeError("Unable to delete user group")
+            return success
+        
+        except Exception as e:
+            logger.error(str(e))
+            raise

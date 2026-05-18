@@ -89,6 +89,7 @@ class BaseRepo(ABC):
 
     def sql_select(self, columns: list[str] | None = None, 
                 where_conditions: dict[str, Any] | None = None,
+                null_conditions: list[str] = None,
                 key_column: str = 'id',
                 key_column_value: str = None,
                 limit: int | None = None,
@@ -109,6 +110,12 @@ class BaseRepo(ABC):
         where_clauses = []
         params = []
         print(f"\n\nn\DEBUG: {where_conditions}\n\n\n") 
+
+        if null_conditions:
+            where_clauses.extend(
+                sql.SQL("{} is NULL").format(sql.Identifier(col)) for col in null_conditions
+            )
+
         if where_conditions:
             where_clauses.extend(
                 sql.SQL("{} = %s").format(sql.Identifier(col)) for col in where_conditions
@@ -155,6 +162,8 @@ class BaseRepo(ABC):
         values = [getattr(model, col) for col in columns]
         query = self.sql_insert(columns)
 
+        logger.debug(f"Query: {query.as_string(conn)}")
+        logger.debug(f"Values: {values}")
         with conn.cursor() as curr:
             curr.execute(query, values)
 
@@ -167,17 +176,31 @@ class BaseRepo(ABC):
         with conn.cursor() as cur:
             cur.execute(query, list[updates.values()] + [getattr(model, key_column)])
     
-    def get_by_id(self, conn: connection, model_cls: Type['BaseModel'], id: str) -> Optional[BaseModel]:
+    def get_by_id(self, conn: connection, model_cls: Type['BaseModel'], id: str, columns: list[str] = None) -> Optional[BaseModel]:
         """Generic SELECT by ID."""
         table = model_cls.table
-        columns = model_cls.columns
-        
-        query = f"SELECT {', '.join(columns)} FROM {table} WHERE id = %s"
-        with conn.cursor() as cur:
+
+        if columns is None:
+            select_fields = sql.SQL('*')
+        else:
+            select_fields = sql.SQL(', ').join(map(sql.Identifier, columns))
+
+        logger.debug("GENERATING QUERY")
+        query = sql.SQL("SELECT {select_fields} FROM {table} WHERE {id} = %s").format(
+            select_fields=select_fields,
+            table=sql.Identifier(table),
+            id=sql.Identifier("id")
+        )
+
+        logger.debug("Retrieving by id") 
+        logger.debug(f"Query: {query.as_string(conn)}")
+
+        with conn.cursor(cursor_factory=RealDictCursor) as cur:
             cur.execute(query, (id,))
             row = cur.fetchone()
+            logger.debug(f"Retrieved details: {row}")
             if row:
-                return model_cls(*row)
+                return model_cls(**row)
             return None
 
     def record_exists(self, conn: connection, record_id: str):
