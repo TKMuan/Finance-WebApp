@@ -51,7 +51,6 @@ class MethodsRepo(BaseRepo):
             with conn.cursor() as curr:
                 curr.execute(query, params)
                 isOwner = curr.fetchall()
-
             if not isOwner:
                 raise UnauthorizedAccess("User does not have access to current data")
 
@@ -79,15 +78,13 @@ class MethodsRepo(BaseRepo):
     
     def update_user_method(self, conn: connection, name: str, accountID: str, id: str):
         time = datetime.now()
-        query = self.sql_update({"name": name, "modified": time, "modified_by": accountID}, "id")
-        params = [name, time, accountID, id]
+        query, params = self.sql_update(updates={"name": name, "modified": time, "modified_by": accountID}, key_column="id", key_column_value=id)
         logger.debug(f"update query: {query.as_string(conn)}")
         logger.debug(f"update params: {params}")
-
         with transaction(conn) as trans:
             with trans.cursor() as curr:
                 curr.execute(query, params)
-            return curr.rowcount 
+                return curr.rowcount 
     
     def delete_user_method(self, conn: connection, accountID: str, id: str):
         query, params = self.sql_delete({"id": id, "accountID": accountID})

@@ -14,6 +14,6 @@ class SuccessCodes(Enum):
     UPDATED = auto()
 
     #GROUPINGS 
-    CREATED_UGROUP = auto()
-    CREATED_TGROUP = auto()
+    CREATED = auto()
     RETRIEVED = auto()
+    DELETED = auto()

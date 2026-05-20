@@ -44,8 +44,7 @@ class UserGroupRepo(BaseRepo):
     
     def update_user_group(self, conn: connection, accountID: str, name: str, id: str):
         time = datetime.now()
-        query = self.sql_update({"name": name, "modified": time, "modified_by": accountID}, "id")
-        params = [name, time, accountID, id]
+        query, params = self.sql_update({"name": name, "modified": time, "modified_by": accountID}, key_column="id", key_column_value=id)
         logger.debug(f"update query: {query.as_string(conn)}")
         logger.debug(f"update params: {params}")
 

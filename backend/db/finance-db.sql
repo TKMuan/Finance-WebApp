@@ -14,6 +14,7 @@ CREATE TABLE IF NOT EXISTS "transactions" (
 	"accountID" VARCHAR(65) NOT NULL,
 	"amount" MONEY NOT NULL,
 	"type" BOOLEAN NOT NULL,
+	"method" VARCHAR(65) NOT NULL,
 	PRIMARY KEY("id")
 ) INHERITS ("document");
 
@@ -39,7 +40,7 @@ CREATE TABLE IF NOT EXISTS "user_info" (
 	"lname" VARCHAR(50) NOT NULL,
 	"mname" VARCHAR(50),
 	PRIMARY KEY("id")
-) INHERITS ("document");
+);
 
 
 
@@ -66,15 +67,8 @@ CREATE TABLE IF NOT EXISTS "userMethods" (
 
 
 CREATE TABLE IF NOT EXISTS "transactionGroups" (
-	"transactionID" VARCHAR(65) NOT NULL UNIQUE,
-	"groupID" VARCHAR(65) NOT NULL
-) INHERITS ("document");
-
-
-
-CREATE TABLE IF NOT EXISTS "transactionMethods" (
-	"transactionID" VARCHAR(65) NOT NULL UNIQUE,
-	"methodID" VARCHAR(65) NOT NULL
+	"transactionID" VARCHAR(65) NOT NULL ,
+	"groupID" VARCHAR(65) NOT NULL 
 ) INHERITS ("document");
 
 
@@ -99,10 +93,8 @@ ADD FOREIGN KEY("groupID") REFERENCES "userGroupings"("id")
 ON UPDATE NO ACTION ON DELETE NO ACTION;
 ALTER TABLE "transactionGroups"
 ADD FOREIGN KEY("transactionID") REFERENCES "transactions"("id")
+ADD CONSTRAINT UQ_gID_tID UNIQUE ("groupID", "transactionID")
 ON UPDATE NO ACTION ON DELETE NO ACTION;
-ALTER TABLE "transactionMethods"
-ADD FOREIGN KEY("methodID") REFERENCES "userMethods"("id")
-ON UPDATE NO ACTION ON DELETE NO ACTION;
-ALTER TABLE "transactionMethods"
-ADD FOREIGN KEY("transactionID") REFERENCES "transactions"("id")
+ALTER TABLE "transactions"
+ADD FOREIGN KEY("method") REFERENCES "userMethods"("id")
 ON UPDATE NO ACTION ON DELETE NO ACTION;

@@ -1,6 +1,7 @@
 from enum import Enum, auto
 
 class ErrorCodes (Enum):
+    BASE = 4000
     BAD_REQUEST = 4001 #Invalid JSON, missing required fields
     MISSING_FIELDS = 4002
     MISSING_CHILD_VALUE = 4003

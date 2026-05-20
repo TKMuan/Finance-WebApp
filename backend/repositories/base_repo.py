@@ -53,27 +53,62 @@ class BaseRepo(ABC):
         )
         return query
 
-    def sql_update(self, updates: dict[str, Any], key_column: str = 'id') -> sql.SQL:
+    def sql_update(self, 
+                   updates: dict[str, Any], 
+                   key_column: str = 'id',
+                   key_column_value: str = "",
+                   where_conditions: dict[str, Any] = None,
+                   null_conditions: list[str] = None
+                   ) -> sql.SQL:
 
         set_clause = sql.SQL(', ').join(
             sql.SQL("{} = %s").format(sql.Identifier(k)) for k in updates
         )
-        where_clause = sql.SQL("{} = %s").format(sql.Identifier(key_column))
 
-        query = sql.SQL("UPDATE {table} SET {set_clause} WHERE {where_clause}").format(
+        where_clauses = []
+        params = []
+        params.extend(updates.values())
+        logger.debug(f"where conditions: {where_conditions}\n\n") 
+
+        if null_conditions:
+            where_clauses.extend(
+                sql.SQL("{} is NULL").format(sql.Identifier(col)) for col in null_conditions
+            )
+
+        if where_conditions:
+            where_clauses.extend(
+                sql.SQL("{} = %s").format(sql.Identifier(col)) for col in where_conditions
+            )
+            params.extend(where_conditions.values())
+        
+        elif key_column:
+            where_clauses.append(sql.SQL("{} = %s").format(sql.Identifier(key_column)))
+            params.append(key_column_value)  # Passed separately
+        
+        if where_clauses:
+            where_clause = sql.SQL(" AND ").join(where_clauses)
+        else:
+            where_clause = None
+
+        update_query = sql.SQL("UPDATE {table} SET {set_clause} WHERE ").format(
             table=sql.Identifier(self._get_table()),
             set_clause=set_clause,
-            where_clause=where_clause
         )
-        return query
+        query = sql.SQL(" ").join([update_query, where_clause])
 
-    def sql_delete(self, where_conditions: dict[str, Any]):
+        return query, params
+
+    def sql_delete(self, where_conditions: dict[str, Any], null_conditions: list[str] = None):
         where_clauses = []
         params = []
         logger.debug(f"Recieved where conditions: {where_conditions}")
         where_clauses.extend(
             sql.SQL("{} = %s").format(sql.Identifier(col)) for col in where_conditions
         )
+        if null_conditions:
+            where_clauses.extend(
+                sql.SQL("{} is NULL").format(sql.Identifier(col)) for col in null_conditions
+            )
         logger.debug(f"where clauses: {where_clauses}")
         where_clause = sql.SQL(" AND ").join(where_clauses)
         params.extend(where_conditions.values())
@@ -109,7 +144,7 @@ class BaseRepo(ABC):
         # WHERE clause
         where_clauses = []
         params = []
-        print(f"\n\nn\DEBUG: {where_conditions}\n\n\n") 
+        logger.debug(f"where conditions: {where_conditions}\n\n") 
 
         if null_conditions:
             where_clauses.extend(
@@ -166,6 +201,9 @@ class BaseRepo(ABC):
         logger.debug(f"Values: {values}")
         with conn.cursor() as curr:
             curr.execute(query, values)
+            result = curr.rowcount
+        
+        return result
 
     def update(self, conn: connection, model: BaseModel, key_column: str = 'id') -> None:
         """Generic UPDATE."""

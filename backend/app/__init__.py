@@ -6,18 +6,23 @@ from routes import (
     auth_routes,
     method_routes,
     MethodBluePrint,
-    UserGroupingBlueprint
+    UserGroupingBlueprint,
+    TransactionsBlueprint
 )
 from services import (
     AccountService,
     MethodsService,
-    UserGroupingService
+    UserGroupingService,
+    TransactionsService
 )
 from repositories import (
     AccountRepo,
     MethodsRepo,
-    UserGroupRepo
+    UserGroupRepo,
+    TransactionsRepo,
+    TransactionsGroupRepo
 )
+
 from db import get_db_connection
 from app.logger import setup_logging
 
@@ -39,9 +44,14 @@ def create_app(config_class=DevelopmentConfig):
     account_repo = AccountRepo()
     methodsRepo = MethodsRepo()
     groupsRepo = UserGroupRepo()
+    transactionsRepo = TransactionsRepo()
+    transactionsGroupRepo = TransactionsGroupRepo()
+
     app.AccountService = AccountService(account_repo)
     app.MethodService = MethodsService(methodsRepo)
     app.GroupsService = UserGroupingService(groupsRepo)
+    app.TransactionService = TransactionsService(transactionsRepo, transactionsGroupRepo)
+
 
     app.db_conn = db_conn
 
@@ -49,6 +59,7 @@ def create_app(config_class=DevelopmentConfig):
     app.register_blueprint(auth_routes.auth)
     app.register_blueprint(MethodBluePrint)
     app.register_blueprint(UserGroupingBlueprint)
+    app.register_blueprint(TransactionsBlueprint)
 
     """
     app.register_blueprint(account)

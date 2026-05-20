@@ -7,9 +7,15 @@ from .user_grouping_services import (
 from .user_methods_services import (
     MethodsService
 )
+from .transaction_services import (
+    TransactionGroupService,
+    TransactionsService
+)
 
 __all__ = [
     "AccountService",
     "MethodsService",
     "UserGroupingService",
+    "TransactionsService",
+    "TransactionsGroupService"
 ]

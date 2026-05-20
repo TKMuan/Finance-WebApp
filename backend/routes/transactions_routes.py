@@ -1,7 +1,7 @@
 from flask import (
     Blueprint, 
     request, 
-    make_response 
+    current_app
 )
 from src.db import (
     get_db_connection
@@ -16,32 +16,88 @@ from flask_jwt_extended import (
     jwt_required, 
     get_jwt_identity
 )
-from flask_cors import (
-    CORS
+from utils import (
+    APIUtil
 )
-from os import (
-    getenv
+from enums import (
+    ErrorCodes,
+    SuccessCodes
 )
-from dotenv import (
-    load_dotenv
+from db import (
+    transaction
 )
+import json
+import logging
 
-load_dotenv()
+logger = logging.getLogger(__name__)
 
-transactions = Blueprint('transactions', __name__, url_prefix='/transactions')
+TransactionsBlueprint = Blueprint('transactions', __name__, url_prefix='/transactions')
 
-@transactions.route("/", methods=['POST'])
-@jwt_required(locations=['cookies'])
+@TransactionsBlueprint.route("/", methods=['POST'])
 def create_transaction():
-    with get_db_connection() as conn:
-        data = request.get_json()
-        user_id = get_jwt_identity()
-        res = transaction_services.create_transaction(conn, user_id, data)
-        print(res)
-        return make_response({
-            "status": res.get("status", False), 
-            "code": res.get("code", "").value, 
-            "data": res.get("data", {}), 
-            "message": res.get("message", "")})
+    try: 
+        data = request.json
+        service = current_app.TransactionService
+        logger.debug(f"recieved data:{data}")
+
+        with get_db_connection() as conn:
+            with transaction(conn) as trans:
+                res = service.create_transaction(trans, data)
+        
+        return APIUtil.success_response(SuccessCodes.CREATED, res, "Created Transaction")
+    except Exception as e:
+        logger.error(str(e))
+        return APIUtil.error_response(ErrorCodes.BASE, str(e))
+        
+@TransactionsBlueprint.route("/", methods=['PUT'])
+def update_transaction():
+    try: 
+        data = request.json
+        service = current_app.TransactionService
+        logger.debug(f"recieved data:{data}")
+
+        with get_db_connection() as conn:
+            with transaction(conn) as trans:
+                res = service.update_transaction(trans, data)
+        
+        return APIUtil.success_response(SuccessCodes.UPDATED, res, "Updated Transaction")
+    except Exception as e:
+        logger.error(str(e))
+        return APIUtil.error_response(ErrorCodes.BASE, str(e))
+        
+@TransactionsBlueprint.route("/", methods=['GET'])
+def get_user_transaction():
+    try: 
+        data = request.args.to_dict()
+        service = current_app.TransactionService
+        logger.debug(f"recieved data:{data}")
+
+        with get_db_connection() as conn:
+                res = service.get_user_transaction(conn, **data)
+        
+        return APIUtil.success_response(SuccessCodes.RETRIEVED, res, "Retrieved Transaction")
+    except Exception as e:
+        logger.error(str(e))
+        raise
+        return APIUtil.error_response(ErrorCodes.BASE, str(e))
+
+@TransactionsBlueprint.route("/all", methods=['GET'])
+def get_all_user_transactions():
+    try: 
+        data = request.args.to_dict()
+        service = current_app.TransactionService
+
+        logger.debug(f"recieved data:{data}")
+        
+        with get_db_connection() as conn:
+                res = service.get_all_user_transaction(conn, **data)
+        
+        return APIUtil.success_response(SuccessCodes.RETRIEVED, res, "Retrieved Transaction")
+    except Exception as e:
+        logger.error(str(e))
+        raise
+        return APIUtil.error_response(ErrorCodes.BASE, str(e))
+
+
 
 
