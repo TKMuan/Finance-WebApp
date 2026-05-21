@@ -15,7 +15,7 @@ type LoginError = Omit<RegisterError, 'fname'>
 
 export const AuthPage = () => {
 
-    const { login, register, error, loading} = useAuth()
+    const { login, error, loading} = useAuth()
 
     const navigate = useNavigate()
     const [searchParams] = useSearchParams()

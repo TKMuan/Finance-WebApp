@@ -1,9 +1,9 @@
-import { Flex, Box, Text, TextField, Button, Card, Grid, DropdownMenu } from '@radix-ui/themes'
+import { Flex, Box, Text, TextField, Button, Card } from '@radix-ui/themes'
 import { useAuth } from '../hooks'
 import type { CreateMethodInput } from '../types'
-import { useEffect, useState, useMemo} from 'react'
-import { MethodHooks, useCreateMethod } from '../hooks/method.hooks'
-import { ChevronLeft, MoveLeft } from 'lucide-react'
+import { useEffect, useState } from 'react'
+import { useCreateMethod } from '../hooks/method.hooks'
+import { ChevronLeft } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 
 export const MethodCreate = () => {

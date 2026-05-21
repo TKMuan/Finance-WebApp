@@ -1,28 +1,24 @@
-import { Flex, Box, Text, TextField, Button, Card, Grid, DropdownMenu } from '@radix-ui/themes'
-import { GeneralPage } from '../components/GeneralPage'
+import { Spinner, Flex, Box, Text, TextField, Button, Card } from '@radix-ui/themes'
 import { useAuth } from '../hooks'
 import { DateSelection } from '../components'
-import { useEffect, useState, useMemo} from 'react'
+import { useEffect, useState } from 'react'
 import type { CreateTransactionInput } from '../types'
 import './transactions.create.css'
-import type { DateObj } from "../components"
 
 export const TransactionCreate = () => {
-    const {user} = useAuth()
+    const {user, loading} = useAuth()
 
-    const [selectedDate, setSelectedDate] = useState(() => {
-        const d = new Date();
-        return {year: d.getFullYear(), month: d.getMonth(), day: d.getDate()}
-    })
+    const [selectedDate, setSelectedDate] = useState(new Date())
 
     const [FormData, setFormData] = useState<CreateTransactionInput>({
         amount: 0,
         description: "",
         category: "",
         method: "",
-        date: {} as DateObj,
+        date: selectedDate,
         accountID: user?.id || "",
-        type: "Cash"
+        groups: [],
+        type: false
     })
 
     useEffect(() => {
@@ -33,6 +29,9 @@ export const TransactionCreate = () => {
          console.log("Creating transaction with data: ", FormData)
     }
 
+    if (loading) {
+        return <Spinner/>
+    }
     return (
         <Box className="w-full p-5">
             <Text>New Transaction</Text>

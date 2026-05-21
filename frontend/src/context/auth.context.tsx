@@ -1,9 +1,8 @@
-import React, { createContext, useCallback, useEffect, useContext, useState } from "react";
-import { checkActiveSessionApi, loginApi, logoutApi, registerApi } from "../api";
-import { useLocation, useNavigate, useSearchParams} from "react-router-dom";
+import React, { createContext, useCallback, useEffect, useState } from "react";
+import { checkActiveSessionApi, loginApi } from "../api";
+import { useNavigate } from "react-router-dom";
 import { Flex, Text, Spinner } from "@radix-ui/themes";
-import type { LoginCredentials, User } from "../types";
-import { useQueryClient, useQuery } from "@tanstack/react-query";
+import type { User } from "../types";
 
 type AuthContextType = {
   user: User | null;
@@ -21,10 +20,6 @@ type Prop = {
 export const AuthContext = createContext<AuthContextType>({} as  AuthContextType);
 
 export const AuthProvider = ({ children }: Prop) => {
-    const queryClient = useQueryClient()
-    const location = useLocation();
-    const [searchParams] = useSearchParams();  
-
     const navagate = useNavigate();
     const [error, setError] = useState<string | null>(null);
     const [user, setUser] = useState<User | null>(null);

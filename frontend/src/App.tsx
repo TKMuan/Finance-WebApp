@@ -13,7 +13,7 @@ import {
 } from './pages'
 import { AuthProvider } from './context'
 
-import { ProtectedRoutes } from './utils'
+// Removed unused ProtectedRoutes import
 
 function App() {
   return (

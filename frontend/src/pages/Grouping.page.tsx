@@ -1,11 +1,10 @@
-import { Flex, Box, Text, TextField, Button, Card, Grid, Spinner } from '@radix-ui/themes'
-import { GeneralPage } from '../components/GeneralPage'
+import { Flex, Box, Text, TextField, Button, Card, Spinner } from '@radix-ui/themes'
 import { useAuth, useGetGroups, useUpdateGroup, useDeleteGroup } from '../hooks'
 import { useEffect, useState } from 'react'
 import { useNavigate } from "react-router-dom"
-import { Search, ListFilter, Check, Pencil, Trash2, X } from 'lucide-react'
+import { Search, Check, Pencil, Trash2, X } from 'lucide-react'
 import type { UserGroupings } from '../types'
-import { useQueryClient } from '@tanstack/react-query'
+// removed unused useQueryClient import
 
 interface groupDisplayProp{
     record: UserGroupings
@@ -77,12 +76,11 @@ const GroupDisplayComponent = ({record}: groupDisplayProp) => {
 export const GroupingPage = () => {
     const {user, loading} = useAuth()
     const [currentPage, setCurrentPage] = useState<number>(0)
-    const [pageSize, setPageSize] = useState<number>(5)
+    const [pageSize] = useState<number>(5)
     const [searchGroup, setSearchGroup] = useState<string>("")
     const {data: groups, isPending, refetch} = useGetGroups(user?.id || "", currentPage, pageSize, searchGroup)
 
     const navigate = useNavigate()
-    const queryClient = useQueryClient()
 
     useEffect(() => {
         console.log("Groups: ", groups)

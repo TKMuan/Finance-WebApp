@@ -1,5 +1,5 @@
-import { Outlet, Navigate, useNavigate, useLocation} from "react-router-dom"
-import { Spinner, Text } from "@radix-ui/themes"
+import { Outlet, Navigate, useLocation} from "react-router-dom"
+import { Spinner } from "@radix-ui/themes"
 
 import { useAuth } from "../hooks"
 export const ProtectedRoutes = () => {

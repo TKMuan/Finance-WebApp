@@ -1,4 +1,3 @@
-const API_BASE = import.meta.env.VITE_API_URL || "http://localhost:5173";
 const BACKEND_API = import.meta.env.VITE_BACKEND_API || "http://localhost:5000";
 
 export const checkActiveSessionApi = async () => {

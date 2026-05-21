@@ -1,4 +1,4 @@
-import type { CreateTransactionInput, Pagination, Transaction, TransactionFilter } from "../types"
+import type { CreateTransactionInput, Transaction, TransactionFilter } from "../types"
 
 const BACKEND_API = import.meta.env.VITE_BACKEND_API || "http://localhost:5000";
 
@@ -54,7 +54,7 @@ export const retrieve_all_transactions = async (
 
     if (!response.ok) throw new Error("");
     const recieved = await response.json();
-    recieved.data.data = recieved.data.data.map((record) => {
+    recieved.data.data = recieved.data.data.map((record: Transaction) => {
         return {...record, transaction_time: new Date(record.transaction_time)}
     })  
     return recieved.data;
