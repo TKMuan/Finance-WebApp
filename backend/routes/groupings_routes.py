@@ -34,6 +34,7 @@ def create_user_grouping():
             user_group = service.create_grouping(conn, data)
             return APIUtil.success_response(SuccessCodes.BASE, {}, "success")
     except Exception as e:
+        raise
         return APIUtil.error_response(ErrorCodes.BASE, str(e))
 
 @UserGroupingBlueprint.route("/", methods=['PUT'])
@@ -44,7 +45,7 @@ def update_user_grouping():
             logger.debug(f"data recieved: {data}")
             service = current_app.GroupsService
             user_group = service.update_grouping(conn, data)
-            return APIUtil.success_response(SuccessCodes.BASE, {}, "success")
+            return APIUtil.success_response(SuccessCodes.BASE, user_group, "success")
     except Exception as e:
         return APIUtil.error_response(ErrorCodes.BASE, str(e))
 
@@ -59,7 +60,7 @@ def user_groupings():
         
         logger.debug(f"Retrieved data: {res}")
 
-        return APIUtil.success_response(SuccessCodes.BASE, res, "success")
+        return APIUtil.success_response(SuccessCodes.BASE, {"data": res, "page": int(args['page']), 'limit': int(args['limit'])}, "success")
         
     except Exception as e: 
         raise
@@ -83,13 +84,16 @@ def user_grouping():
 
 @UserGroupingBlueprint.route("/", methods=['DELETE'])
 def delete_grouping():
+    logger.debug("ENTERED DELETION ROUTE")
     try:
         with get_db_connection() as conn:
             args = request.args.to_dict()
             logger.debug(f"args: {args}")
             service = current_app.GroupsService
+            res = service.delete_user_grouping(conn, **args)
 
-        return APIUtil.success_response(SuccessCodes.BASE, {}, "success")
+        return APIUtil.success_response(SuccessCodes.BASE, res, "success")
         
     except Exception as e: 
+        raise
         return APIUtil.error_response(ErrorCodes.BASE, str(e))

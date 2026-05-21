@@ -132,12 +132,15 @@ def login():
             return res, code
 
     except InvalidCredentials as ice:
+        raise
         return APIUtil.success_response(code=ice.code, data=None, message=str(ice))
+        raise
     except MissingFieldError as mfe:
         return APIUtil.error_response(code=mfe.code, message = str(mfe))
         
 
     except Exception as e:
+        raise
         return APIUtil.error_response(code=ErrorCodes.BAD_REQUEST, message = str(e))
 
 @auth.route('/create', methods=['POST'])
