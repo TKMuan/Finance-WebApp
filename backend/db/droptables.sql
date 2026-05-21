@@ -11,5 +11,3 @@ DROP TABLE IF EXISTS "userGroupings" CASCADE;
 DROP TABLE IF EXISTS "userMethods" CASCADE;
 
 DROP TABLE IF EXISTS "transactionGroups" CASCADE;
-
-DROP TABLE IF EXISTS "transactionMethods" CASCADE;

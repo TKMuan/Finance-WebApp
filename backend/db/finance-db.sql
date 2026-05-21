@@ -49,12 +49,12 @@ CREATE TABLE IF NOT EXISTS "userGroupings" (
 	"id" VARCHAR(65) NOT NULL UNIQUE,
 	"name" VARCHAR(50) NOT NULL,
 	"accountID" VARCHAR(65) NOT NULL,
-	"parent" VARCHAR(65),
 	PRIMARY KEY("id")
 ) INHERITS ("document");
 
 
-
+CREATE UNIQUE INDEX "UQ_gName_aID"
+ON "userGroupings" ("name", "accountID");
 
 CREATE TABLE IF NOT EXISTS "userMethods" (
 	"id" VARCHAR(65) NOT NULL UNIQUE,
@@ -64,15 +64,17 @@ CREATE TABLE IF NOT EXISTS "userMethods" (
 ) INHERITS ("document");
 
 
-
+CREATE UNIQUE INDEX "UQ_mName_aID"
+ON "userMethods" ("name", "accountID");
 
 CREATE TABLE IF NOT EXISTS "transactionGroups" (
-	"transactionID" VARCHAR(65) NOT NULL ,
-	"groupID" VARCHAR(65) NOT NULL 
+	"transactionID" VARCHAR(65) NOT NULL,
+	"groupID" VARCHAR(65) NOT NULL
 ) INHERITS ("document");
 
 
-
+CREATE UNIQUE INDEX "UQ_tID_gID"
+ON "transactionGroups" ("transactionID", "groupID");
 ALTER TABLE "document"
 ADD FOREIGN KEY("modified_by") REFERENCES "account"("id")
 ON UPDATE NO ACTION ON DELETE NO ACTION;
@@ -82,9 +84,6 @@ ON UPDATE NO ACTION ON DELETE NO ACTION;
 ALTER TABLE "userGroupings"
 ADD FOREIGN KEY("accountID") REFERENCES "account"("id")
 ON UPDATE NO ACTION ON DELETE NO ACTION;
-ALTER TABLE "userGroupings"
-ADD CONSTRAINT UQ_gName_aID UNIQUE ("name", "accountID")
-ON UPDATE NO ACTION ON DELETE NO ACTION;
 ALTER TABLE "userMethods"
 ADD FOREIGN KEY("accountID") REFERENCES "account"("id")
 ON UPDATE NO ACTION ON DELETE NO ACTION;
@@ -93,7 +92,6 @@ ADD FOREIGN KEY("groupID") REFERENCES "userGroupings"("id")
 ON UPDATE NO ACTION ON DELETE NO ACTION;
 ALTER TABLE "transactionGroups"
 ADD FOREIGN KEY("transactionID") REFERENCES "transactions"("id")
-ADD CONSTRAINT UQ_gID_tID UNIQUE ("groupID", "transactionID")
 ON UPDATE NO ACTION ON DELETE NO ACTION;
 ALTER TABLE "transactions"
 ADD FOREIGN KEY("method") REFERENCES "userMethods"("id")

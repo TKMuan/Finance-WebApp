@@ -60,7 +60,7 @@ if __name__ == "__main__":
                             VALUES (%s, %s, %s, %s, %s, %s, %s, %s);
                         """)
 
-                    cur.execute(account_insert_query, (admin_id, 'admin@example.com', hashed_password, 'Admin', 'User', created, created, admin_id))
+                    cur.execute(account_insert_query, (admin_id, 'admin@admin.com', hashed_password, 'Admin', 'User', created, created, admin_id))
 
                     conn.commit()
         except Exception as _:
