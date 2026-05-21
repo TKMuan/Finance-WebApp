@@ -180,7 +180,7 @@ class TransactionsRepo(BaseRepo):
 
         if method is not None:
             where_clause.append(
-                sql.SQL("{trans}.{method} >= %s").format(
+                sql.SQL("{trans}.{method} LIKE %s").format(
                     trans=sql.Identifier("transactions"),
                     method=sql.Identifier("method")
                 )
@@ -250,7 +250,7 @@ class TransactionsRepo(BaseRepo):
         with conn.cursor(cursor_factory=RealDictCursor) as cursor:
             cursor.execute(query, params)
             res = cursor.fetchall()
-        
+        logger.debug(f"RETRIEVED TRANS: {res}") 
         return res
 
 class TransactionsGroupRepo(BaseRepo):
@@ -316,7 +316,7 @@ class TransactionsGroupRepo(BaseRepo):
 
         query = sql.SQL(" ").join([select_query, where_query]) 
 
-        logger.debug(f"query: {query.as_string(conn)}")
+        logger.debug(f"\n\n\nquery: {query.as_string(conn)}")
         logger.debug(f"params: {params}")
 
         with conn.cursor(cursor_factory=RealDictCursor) as cursor:

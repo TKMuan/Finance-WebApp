@@ -87,12 +87,13 @@ def get_all_user_transactions():
         data = request.args.to_dict()
         service = current_app.TransactionService
 
+        logger.debug(f"RETRIEVING USER TRANSACTIONS")
         logger.debug(f"recieved data:{data}")
         
         with get_db_connection() as conn:
                 res = service.get_all_user_transaction(conn, **data)
         
-        return APIUtil.success_response(SuccessCodes.RETRIEVED, res, "Retrieved Transaction")
+        return APIUtil.success_response(SuccessCodes.RETRIEVED, {"data": res, "page": int(data["page"]), "size": data['limit']}, "Retrieved Transaction")
     except Exception as e:
         logger.error(str(e))
         raise

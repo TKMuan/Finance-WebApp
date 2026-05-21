@@ -149,9 +149,9 @@ class TransactionsService:
         if to_amount:
             to_amount = int(to_amount)
         if from_date:
-            from_date = datetime.strptime(from_date, "%Y-%m-%d")
+            from_date = datetime.fromisoformat(from_date)
         if to_date:
-            to_date = datetime.strptime(to_date, "%Y-%m-%d")
+            to_date = datetime.fromisoformat(to_date)
         
         if limit is not None:
             limit = int(limit)
@@ -184,6 +184,8 @@ class TransactionsService:
             limit=limit,
             page=page
             )
-
+        for record in res:
+            groups = self.groupRepo.get_transaction_group(conn, {"transactionID": record['id']})
+            record['groups'] = groups
         return res
     
