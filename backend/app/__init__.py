@@ -25,18 +25,25 @@ from repositories import (
 
 from db import get_db_connection
 from app.logger import setup_logging
+import logging
 
 def create_app(config_class=DevelopmentConfig):
 
     setup_logging() 
 
+    logger = logging.getLogger(__name__)
     app = Flask(__name__)
     app.config.from_object(config_class)
     
     # Init extensions
     jwt.init_app(app)
-    cors.init_app(app, supports_credentials=True, 
-                  resources={r"/*": {"origins": config_class.CORS_ALLOWED_ORIGINS.split(',')}})
+    cors.init_app(
+        app, 
+        supports_credentials=True,
+        origins=config_class.CORS_ALLOWED_ORIGINS.split(',')
+    )
+
+#                  resources={r"/*": {"origins": config_class.CORS_ALLOWED_ORIGINS.split(',')}})
     
     # Register services as app attributes
     db_conn = get_db_connection

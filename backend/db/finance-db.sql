@@ -83,7 +83,7 @@ ALTER TABLE "userGroupings"
 ADD FOREIGN KEY("accountID") REFERENCES "account"("id")
 ON UPDATE NO ACTION ON DELETE NO ACTION;
 ALTER TABLE "userGroupings"
-ADD FOREIGN KEY("parent") REFERENCES "userGroupings"("id")
+ADD CONSTRAINT UQ_gName_aID UNIQUE ("name", "accountID")
 ON UPDATE NO ACTION ON DELETE NO ACTION;
 ALTER TABLE "userMethods"
 ADD FOREIGN KEY("accountID") REFERENCES "account"("id")
