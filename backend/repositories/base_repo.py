@@ -124,6 +124,7 @@ class BaseRepo(ABC):
 
     def sql_select(self, columns: list[str] | None = None, 
                 where_conditions: dict[str, Any] | None = None,
+                like_condition: dict[str, Any] = None,
                 null_conditions: list[str] = None,
                 key_column: str = 'id',
                 key_column_value: str = None,
@@ -150,13 +151,18 @@ class BaseRepo(ABC):
             where_clauses.extend(
                 sql.SQL("{} is NULL").format(sql.Identifier(col)) for col in null_conditions
             )
-
+        
+        if like_condition:
+            where_clauses.extend(
+                sql.SQL("{} LIKE %s").format(sql.Identifier(col)) for col in like_condition
+            )
+            params.extend([f"%{val}%" for val in like_condition.values()] )
         if where_conditions:
             where_clauses.extend(
                 sql.SQL("{} = %s").format(sql.Identifier(col)) for col in where_conditions
             )
             params.extend(where_conditions.values())
-        
+
         elif key_column:
             where_clauses.append(sql.SQL("{} = %s").format(sql.Identifier(key_column)))
             params.append(key_column_value)  # Passed separately

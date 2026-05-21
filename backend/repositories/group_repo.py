@@ -53,7 +53,7 @@ class UserGroupRepo(BaseRepo):
         return curr.rowcount 
 
     def delete_user_group(self, conn: connection, accountID: str, id: str):
-        query, params = self.sql_delete({"id": id, "accountID": accountID})
+        query, params = self.sql_delete(where_conditions={"id": id, "accountID": accountID})
 
         logger.debug(f"query: {query.as_string(conn)}")
         logger.debug(f"params: {params}")
@@ -79,27 +79,15 @@ class UserGroupRepo(BaseRepo):
         return result
 
 
-    def get_all_user_groups(self, conn: connection, accountID: str, limit: int, offset: int):
+    def get_all_user_groups(self, conn: connection, accountID: str, limit: int, offset: int, name: str = None):
 
-        query, params = self.sql_select(where_conditions={"accountID": accountID},null_conditions=["parent"], limit=limit, offset=offset)
 
-        logger.debug(f"query: {query.as_string(conn)}")
-        logger.debug(f"params: {params}")
-
-        with conn.cursor(cursor_factory=RealDictCursor) as curr:
-            curr.execute(query, params)
-            result = curr.fetchall()
-        
-        logger.debug(f"Fetched data: {result}")
-
-        return result
-    
-    def get_children(self, conn: connection, accountID: str, pid: str):
-        where_cond = {"parent": pid, "accountID": accountID}
-        query, params = self.sql_select(where_conditions=where_cond)
+        like_conditions = {'name': name} if name else None
+        query, params = self.sql_select(where_conditions={"accountID": accountID}, limit=limit, offset=offset, like_condition=like_conditions)
 
         logger.debug(f"query: {query.as_string(conn)}")
         logger.debug(f"params: {params}")
+
         with conn.cursor(cursor_factory=RealDictCursor) as curr:
             curr.execute(query, params)
             result = curr.fetchall()

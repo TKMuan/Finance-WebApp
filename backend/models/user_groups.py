@@ -28,13 +28,11 @@ class UserGroups(Document):
         'name', 
         'modified_by'}
     optional_fields: ClassVar[set[str]] = {
-        'parent'
         }
     columns: ClassVar[set[str]] = {
         "id",
         "accountID",
         "name",
-        "parent",
         "created",
         "modified",
         "modified_by",
@@ -43,7 +41,6 @@ class UserGroups(Document):
     id: str
     accountID: str
     name: str
-    parent: str | None
     created: datetime | None
     modified: datetime | None
     modified_by: str 
