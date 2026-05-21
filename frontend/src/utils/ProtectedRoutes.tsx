@@ -1,5 +1,5 @@
 import { Outlet, Navigate, useNavigate, useLocation} from "react-router-dom"
-import { Text } from "@radix-ui/themes"
+import { Spinner, Text } from "@radix-ui/themes"
 
 import { useAuth } from "../hooks"
 export const ProtectedRoutes = () => {
@@ -9,7 +9,7 @@ export const ProtectedRoutes = () => {
     
     const path = new URLSearchParams({"from": location.pathname})
     if (loading){
-        return
+        return <Spinner/>
     }
 
     console.log("user at protected route: ", user)

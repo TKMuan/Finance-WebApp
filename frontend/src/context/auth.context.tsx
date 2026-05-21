@@ -1,7 +1,7 @@
 import React, { createContext, useCallback, useEffect, useContext, useState } from "react";
 import { checkActiveSessionApi, loginApi, logoutApi, registerApi } from "../api";
 import { useLocation, useNavigate, useSearchParams} from "react-router-dom";
-import { Box, Text } from "@radix-ui/themes";
+import { Flex, Text, Spinner } from "@radix-ui/themes";
 import type { LoginCredentials, User } from "../types";
 import { useQueryClient, useQuery } from "@tanstack/react-query";
 
@@ -92,8 +92,8 @@ export const AuthProvider = ({ children }: Prop) => {
             setError(result.message)
         }
         setIsReady(true)
-        console.log("result: ", result)
     }, [])
+
     const logoutUser = () => {
 
     }
@@ -103,7 +103,7 @@ export const AuthProvider = ({ children }: Prop) => {
 
 
     if (!isReady || checkingActive){
-        return <Text>Loading...</Text>
+        return <Flex className="w-full h-full" align="center" justify={"center"}><Spinner></Spinner></Flex>
     }
     return (
         <AuthContext.Provider value={{

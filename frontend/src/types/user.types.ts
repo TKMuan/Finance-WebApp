@@ -22,7 +22,6 @@ export interface UserGroupings{
     id: string,
     name: string,
     accountID: string,
-    parent: string
 }
 
 export type CreateUserGroupingInput = Omit<UserGroupings, 'id'>;
