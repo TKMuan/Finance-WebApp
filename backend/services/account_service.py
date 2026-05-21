@@ -140,7 +140,7 @@ class AccountService:
             print(f"{col}: {getattr(account, col)}")
         with transaction(conn):
            self.repo.insert(conn, account)
-        return {"account_id": account.id}
+        return {"account_id": account.id, "name": data['fname'], "email": data['email']}
 
 
     def update_account(self, conn: connection, updated: dict, id: str) -> dict:

@@ -15,7 +15,7 @@ type LoginError = Omit<RegisterError, 'fname'>
 
 export const AuthPage = () => {
 
-    const { login, error, loading} = useAuth()
+    const { login, register, error, loading} = useAuth()
 
     const navigate = useNavigate()
     const [searchParams] = useSearchParams()
@@ -66,6 +66,7 @@ export const AuthPage = () => {
             return
         }
         console.log("Registration credentials: ", credentials)
+        register(credentials.email, credentials.password, credentials.fname, credentials.lname)
     }
 
     if (loading){

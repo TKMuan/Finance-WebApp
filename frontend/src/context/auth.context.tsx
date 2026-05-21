@@ -1,5 +1,5 @@
 import React, { createContext, useCallback, useEffect, useState } from "react";
-import { checkActiveSessionApi, loginApi } from "../api";
+import { checkActiveSessionApi, loginApi, registerApi } from "../api";
 import { useNavigate } from "react-router-dom";
 import { Flex, Text, Spinner } from "@radix-ui/themes";
 import type { User } from "../types";
@@ -92,8 +92,17 @@ export const AuthProvider = ({ children }: Prop) => {
     const logoutUser = () => {
 
     }
-    const registerUser = () => {
+    const registerUser = async (email: string, password: string, fname: string, lname: string) => {
+        const result = await registerApi(email, password, fname, lname);
 
+        if (result.code === 200)
+        {
+            setUser(result.data)
+        }
+
+        else{
+            setError(result.message)
+        }
     }
 
 
