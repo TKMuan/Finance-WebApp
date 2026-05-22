@@ -106,14 +106,14 @@ export function Dashboard() {
         </Box>
       <Box className="w-full p-5">
         <Text>Welcome to your dashboard!</Text>
-          <Card className="w-full min-h-[10] mt-4">
+          <Card className="w-full min-h-[10] mt-4 grow">
             <Text>Spending Analysis</Text>
-            <Flex gap="2" className='pt-4' justify={"center"}>
+            <Grid gap="2" className='pt-4 grow gird grid-cols-1' columns={{sm: '1', md:'2', lg:'3'}} justify={"center"} >
               <Card className="min-h-8 grow">
                 <Text>
-                  Day Spending
+                  Day Spending Total:
                 </Text>
-                <Text>Total: {spendingTotals.day}</Text>
+                <Text>{spendingTotals.day}</Text>
                 <Flex className="" gap="2" mt='2' direction="column">
                   {
                     (dashboardStats?.data?.day || []).map((record: TransactionDashboard) => (
@@ -163,7 +163,7 @@ export function Dashboard() {
                   }
                 </Flex>
               </Card>
-            </Flex>
+            </Grid>
           </Card>
           <Card className="w-full min-h-[10rem] mt-4">
             <Text>Recent Transactions </Text>
