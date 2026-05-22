@@ -114,3 +114,18 @@ export const retrieve_transaction_dashboard = async (accountID: string) => {
     console.log("recieved: ", recieved)
     return recieved.data;
 }
+export const retrieve_transaction_balance = async (accountID: string) => {
+    const query = new URLSearchParams({
+        accountID: accountID
+    });
+
+    const response = await fetch(`${BACKEND_API}/transactions/balance?${query.toString()}`, {
+        method: "GET",
+        credentials: "include",
+    })
+
+    if (!response.ok) throw new Error("");
+    const recieved = await response.json();
+    console.log("recieved: ", recieved)
+    return recieved.data;
+}

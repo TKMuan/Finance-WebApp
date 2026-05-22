@@ -1,6 +1,6 @@
 import { Flex, Button, Text, Grid, Box, Card, Badge, Spinner } from '@radix-ui/themes'
 import { useNavigate } from 'react-router-dom'
-import { useAuth, useGetTransactionDashboard, useGetTransactions } from '../hooks'
+import { useAuth, useGetTransactionBalance, useGetTransactionDashboard, useGetTransactions } from '../hooks'
 import { useEffect, useMemo } from 'react'
 import type { Transaction, TransactionDashboard } from '../types'
 
@@ -65,24 +65,11 @@ export function Dashboard() {
         "limit": 10
   }) 
   const {data: dashboardStats, isPending: gettingDashStat} = useGetTransactionDashboard(user?.id || "")
+  const {data: balanceData, isPending: gettingBalance} = useGetTransactionBalance(user?.id || "")
 
   const spendingTotals = useMemo(() => {
-    const toIntAmount = (value: unknown) => {
-      if (typeof value === 'number') {
-        return Math.trunc(value)
-      }
-
-      if (typeof value === 'string') {
-        const normalized = value.trim().replace(/[$,\s]/g, '')
-        const parsed = Number(normalized)
-        return Number.isNaN(parsed) ? 0 : Math.trunc(parsed)
-      }
-
-      return 0
-    }
-
     const sumRecords = (records: TransactionDashboard[] = []) =>
-      records.reduce((total, record) => total + toIntAmount(record.sum), 0)
+      records.reduce((total, record) => total + parseFloat(record.sum), 0)
 
     return {
       day: sumRecords(dashboardStats?.data?.day),
@@ -96,7 +83,7 @@ export function Dashboard() {
     console.log("dash: ", dashboardStats)
   }, [user])
 
-  if (loading || gettingTransactions || gettingDashStat){
+  if (loading || gettingTransactions || gettingDashStat || gettingBalance){
     return <Spinner></Spinner>
   }
   return (
@@ -108,19 +95,19 @@ export function Dashboard() {
         <Text>Welcome to your dashboard!</Text>
           <Card className="w-full min-h-[10] mt-4 grow">
             <Text>Spending Analysis</Text>
-            <Grid gap="2" className='pt-4 grow gird grid-cols-1' columns={{sm: '1', md:'2', lg:'3'}} justify={"center"} >
+            <Grid gap="2" className='pt-4 grow gird grid-cols-1' columns={{sm: '1', md:'2', lg:'4'}} justify={"center"} >
               <Card className="min-h-8 grow">
                 <Text>
-                  Day Spending Total:
+                  Day Spending Total: 
                 </Text>
-                <Text>{spendingTotals.day}</Text>
+                <Text mx="2">{spendingTotals.day}</Text>
                 <Flex className="" gap="2" mt='2' direction="column">
                   {
                     (dashboardStats?.data?.day || []).map((record: TransactionDashboard) => (
                       <Badge key={`day-${record.name}`}>
                         <Flex gap='2'>
                         <Text>{record.name}</Text>
-                        <Text>{record.sum}</Text>
+                        <Text>: {record.sum}</Text>
                         </Flex>
                       </Badge>
                     ))
@@ -129,16 +116,16 @@ export function Dashboard() {
               </Card>
               <Card className="grow">
                 <Text>
-                  Month Spending
+                  Month Spending Total: 
                 </Text>
-                <Text>Total: {spendingTotals.month}</Text>
+                <Text mx='2'>{spendingTotals.month}</Text>
                 <Flex gap="2" mt='2' direction="column">
                   {
                     (dashboardStats?.data?.month || []).map((record: TransactionDashboard) => (
                       <Badge key={`month-${record.name}`}>
                         <Flex gap='2'>
                         <Text>{record.name}</Text>
-                        <Text>{record.sum}</Text>
+                        <Text>: {record.sum}</Text>
                         </Flex>
                       </Badge>
                     ))
@@ -147,16 +134,33 @@ export function Dashboard() {
               </Card>
               <Card className="grow">
                 <Text>
-                  Year Spending
+                  Year Spending Total: 
                 </Text>
-                <Text>Total: {spendingTotals.year}</Text>
+                <Text mx='2'>{spendingTotals.year}</Text>
                 <Flex gap="2" mt='2' direction="column">
                   {
                     (dashboardStats?.data?.year || []).map((record: TransactionDashboard) => (
                       <Badge key={`year-${record.name}`}>
                         <Flex gap='2'>
                         <Text>{record.name}</Text>
-                        <Text>{record.sum}</Text>
+                        <Text>: {record.sum}</Text>
+                        </Flex>
+                      </Badge>
+                    ))
+                  }
+                </Flex>
+              </Card>
+              <Card className="grow">
+                <Text>
+                  Methods Balances: 
+                </Text>
+                <Flex gap="2" mt='2' direction="column">
+                  {
+                    (balanceData?.data || []).map((record: TransactionDashboard) => (
+                      <Badge key={`year-${record.name}`}>
+                        <Flex gap='2'>
+                        <Text>{record.name}</Text>
+                        <Text>: {record.sum}</Text>
                         </Flex>
                       </Badge>
                     ))

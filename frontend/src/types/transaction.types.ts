@@ -22,7 +22,7 @@ export interface CreateTransactionInput {
 }
 export interface TransactionDashboard{
     name: string,
-    sum: number
+    sum: string
 }
 export interface TransactionFilter {
     from_amount: number | null,

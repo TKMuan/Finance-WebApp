@@ -1,8 +1,8 @@
-import { Flex, Box, Text, TextField, Button, Card, Spinner } from '@radix-ui/themes'
+import { Flex, Box, Text, TextField, Button, Card, Spinner, DropdownMenu } from '@radix-ui/themes'
 import { useAuth, useGetGroups, useUpdateGroup, useDeleteGroup } from '../hooks'
 import { useEffect, useState } from 'react'
 import { useNavigate } from "react-router-dom"
-import { Search, Check, Pencil, Trash2, X } from 'lucide-react'
+import { Search, Check, Pencil, Trash2, X, ChevronDown } from 'lucide-react'
 import type { UserGroupings } from '../types'
 // removed unused useQueryClient import
 
@@ -76,7 +76,7 @@ const GroupDisplayComponent = ({record}: groupDisplayProp) => {
 export const GroupingPage = () => {
     const {user, loading} = useAuth()
     const [currentPage, setCurrentPage] = useState<number>(0)
-    const [pageSize] = useState<number>(5)
+    const [pageSize, setPageSize] = useState<number>(5)
     const [searchGroup, setSearchGroup] = useState<string>("")
     const {data: groups, isPending, refetch} = useGetGroups(user?.id || "", currentPage, pageSize, searchGroup)
 
@@ -103,6 +103,31 @@ export const GroupingPage = () => {
                         <Search onClick={() => refetch()}/> 
                     </Flex>
                     <Card className="size-full min-h-80">
+                        <Flex className="w-full" mb='4' mx='0' justify="end">
+                            <DropdownMenu.Root>
+                                <DropdownMenu.Trigger>
+                                    <Button variant='outline'>
+                                        {pageSize}
+                                        <ChevronDown/>
+                                    </Button>
+                                </DropdownMenu.Trigger> 
+                                <DropdownMenu.Content>
+                                    <DropdownMenu.Item onClick={() => setPageSize(5)}>
+                                        5
+                                    </DropdownMenu.Item>
+                                    <DropdownMenu.Item onClick={() => setPageSize(10)}>
+                                        10
+                                    </DropdownMenu.Item>
+                                    <DropdownMenu.Item onClick={() => setPageSize(15)}>
+                                        15
+                                    </DropdownMenu.Item>
+                                    <DropdownMenu.Item onClick={() => setPageSize(20)}>
+                                        20
+                                    </DropdownMenu.Item>
+                                </DropdownMenu.Content>
+                            </DropdownMenu.Root>
+
+                        </Flex>
                         <Flex direction='column' gap='2'>
                             {
                                 groups ? groups.data.map((record) => (

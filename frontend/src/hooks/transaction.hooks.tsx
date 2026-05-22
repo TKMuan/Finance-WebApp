@@ -1,6 +1,6 @@
 import type { Pagination, Transaction, CreateTransactionInput, TransactionFilter} from "../types";
 import { useQuery, queryOptions, useQueryClient, useMutation } from "@tanstack/react-query"
-import { retrieve_transaction, retrieve_all_transactions, create_transaction, update_transaction, delete_transaction, retrieve_transaction_dashboard} from "../api";
+import { retrieve_transaction, retrieve_transaction_balance, retrieve_all_transactions, create_transaction, update_transaction, delete_transaction, retrieve_transaction_dashboard} from "../api";
 import { useNavigate } from "react-router-dom";
 
 export const useGetTransactionsOptions = (id: string, page: number, size: number, filters: TransactionFilter) => {
@@ -35,6 +35,12 @@ export function useGetTransactionDashboard(accountID: string) {
   return useQuery({
     queryKey: ["transactionDashboard"],
     queryFn: async () => retrieve_transaction_dashboard(accountID)
+  });
+}
+export function useGetTransactionBalance(accountID: string) {
+  return useQuery({
+    queryKey: ["transactionBalance"],
+    queryFn: async () => retrieve_transaction_balance(accountID)
   });
 }
 
