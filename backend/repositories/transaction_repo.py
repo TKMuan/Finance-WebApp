@@ -18,9 +18,13 @@ from typing import (
     Any
 )
 from datetime import (
-    datetime
+    datetime,
+    date,
+    time
 )
-
+from calendar import (
+    monthrange
+)
 import logging
 
 logger = logging.getLogger(__name__)
@@ -53,7 +57,7 @@ class TransactionsRepo(BaseRepo):
     
     def delete_transactions(self, trans: connection, transID: str):
 
-        query, params = self.sql_delete(where_conditions={"transactionID": transID})
+        query, params = self.sql_delete(where_conditions={"id": transID})
 
         with trans.cursor() as cursor:
             cursor.execute(query, params)
@@ -98,7 +102,6 @@ class TransactionsRepo(BaseRepo):
             cursor.execute(query, params)
             res = dict(cursor.fetchone())
         
-        logger.debug(f"result: {res}") 
         return res
     
     def get_all_user_transactions(
@@ -239,6 +242,7 @@ class TransactionsRepo(BaseRepo):
         query = sql.SQL(" ").join([
             select_query,
             where_query,
+            sql.SQL("ORDER BY {} DESC").format(sql.Identifier("transaction_time")),
             sql.SQL("LIMIT %s"),
             sql.SQL("OFFSET %s"),
         ])
@@ -252,6 +256,40 @@ class TransactionsRepo(BaseRepo):
             res = cursor.fetchall()
         logger.debug(f"RETRIEVED TRANS: {res}") 
         return res
+    
+    def dashboard_stats(self, conn: connection, aid: str):
+        today = datetime.today()
+        day = today.date() 
+        month = today.month
+        year = today.year
+        select_query = sql.SQL("""
+            SELECT sum({trans}.{amount}), {method}.{name}
+            FROM {trans} LEFT JOIN {method}
+            ON {trans}.{methodcol} = {method}.{id}
+            WHERE {trans}.{aid} = %s AND {trans}.{ttime} >= %s AND {trans}.{ttime} <= %s AND {trans}.{type} = %s
+            GROUP BY {trans}.{methodcol}, {method}.{name} 
+""").format(
+    trans=sql.Identifier("transactions"),
+    amount=sql.Identifier("amount"),
+    method=sql.Identifier("userMethods"),
+    methodcol=sql.Identifier("method"),
+    name=sql.Identifier("name"),
+    id=sql.Identifier('id'),
+    aid=sql.Identifier('accountID'),
+    ttime=sql.Identifier('transaction_time'),
+    type=sql.Identifier("type")
+)
+        _, enddate = monthrange(year, month)
+        with conn.cursor(cursor_factory=RealDictCursor) as curr:
+            
+            curr.execute(select_query, (aid,datetime.combine(day, time.min), datetime.combine(day, time.max), True))
+            day_stats = curr.fetchall()
+            curr.execute(select_query, (aid,date(year, month, 1), date(year, month, enddate), True))
+            month_stats = curr.fetchall()
+            curr.execute(select_query, (aid,date(year, 1, 1), date(year, 12, 31), True))
+            year_stats = curr.fetchall()
+    
+        return {"day": day_stats, "month": month_stats, "year": year_stats}
 
 class TransactionsGroupRepo(BaseRepo):
     def _get_table(self):

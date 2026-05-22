@@ -189,3 +189,9 @@ class TransactionsService:
             record['groups'] = groups
         return res
     
+    def get_dashboard_stats(self, conn: connection, accountID: str):
+
+        data = self.repo.dashboard_stats(conn, accountID)
+
+        return data
+    

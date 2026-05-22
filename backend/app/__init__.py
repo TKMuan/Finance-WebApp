@@ -40,9 +40,11 @@ def create_app(config_class=DevelopmentConfig):
     cors.init_app(
         app, 
         supports_credentials=True,
-        origins=config_class.CORS_ALLOWED_ORIGINS.split(',')
+        origins=['https://financewebapp-zwfz.onrender.com', 'http://localhost:5173']
     )
 
+    logger.debug(f"{app.config.get('CORS_ORIGINS')}")
+    print(f"{app.config.get('CORS_ORIGINS')}")
 #                  resources={r"/*": {"origins": config_class.CORS_ALLOWED_ORIGINS.split(',')}})
     
     # Register services as app attributes

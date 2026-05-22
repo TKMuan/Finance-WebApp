@@ -65,8 +65,26 @@ def update_transaction():
         logger.error(str(e))
         return APIUtil.error_response(ErrorCodes.BASE, str(e))
         
+@TransactionsBlueprint.route("/", methods=['DELETE'])
+def delete_transaction():
+    try: 
+        with get_db_connection() as conn:
+            with transaction(conn) as trans:
+                data = request.args.to_dict()
+                logger.debug(f"Recieved data: {data}")
+                service = current_app.TransactionService
+                methods = service.delete_transaction(conn, **data)
+                logger.debug(f"Deleted transaction: {methods}")
+            return APIUtil.success_response(SuccessCodes.BASE, methods, 'Method Deleted')
+
+    except Exception as e:
+        logger.debug(f"Recieved error {str(e)}")
+        return APIUtil.error_response(code=ErrorCodes.BAD_REQUEST, message=str(e)) 
+
+
 @TransactionsBlueprint.route("/", methods=['GET'])
 def get_user_transaction():
+
     try: 
         data = request.args.to_dict()
         service = current_app.TransactionService
@@ -99,6 +117,24 @@ def get_all_user_transactions():
         raise
         return APIUtil.error_response(ErrorCodes.BASE, str(e))
 
+
+@TransactionsBlueprint.route("/dashboard", methods=['GET'])
+def get_transaction_dashboard():
+    try: 
+        data = request.args.to_dict()
+        service = current_app.TransactionService
+
+        logger.debug(f"RETRIEVING USER TRANSACTIONS")
+        logger.debug(f"recieved data:{data}")
+        
+        with get_db_connection() as conn:
+                res = service.get_dashboard_stats(conn, **data)
+        
+        return APIUtil.success_response(SuccessCodes.RETRIEVED, {"data": res}, "Retrieved Dashboard Stats")
+    except Exception as e:
+        logger.error(str(e))
+        raise
+        return APIUtil.error_response(ErrorCodes.BASE, str(e))
 
 
 

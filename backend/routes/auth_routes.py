@@ -132,7 +132,6 @@ def login():
             return res, code
 
     except InvalidCredentials as ice:
-        raise
         return APIUtil.success_response(code=ice.code, data=None, message=str(ice))
         raise
     except MissingFieldError as mfe:
