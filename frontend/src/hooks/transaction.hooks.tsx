@@ -1,6 +1,6 @@
 import type { Pagination, Transaction, CreateTransactionInput, TransactionFilter} from "../types";
 import { useQuery, queryOptions, useQueryClient, useMutation } from "@tanstack/react-query"
-import { retrieve_transaction, retrieve_all_transactions, create_transaction, update_transaction, delete_transaction} from "../api";
+import { retrieve_transaction, retrieve_all_transactions, create_transaction, update_transaction, delete_transaction, retrieve_transaction_dashboard} from "../api";
 import { useNavigate } from "react-router-dom";
 
 export const useGetTransactionsOptions = (id: string, page: number, size: number, filters: TransactionFilter) => {
@@ -31,6 +31,12 @@ export function useGetTransaction(id: string, accountID: string) {
   console.log('id: ', id)
   return useQuery<Transaction>(useGetTransactionOptions(id, accountID));
 }
+export function useGetTransactionDashboard(accountID: string) {
+  return useQuery({
+    queryKey: ["transactionDashboard"],
+    queryFn: async () => retrieve_transaction_dashboard(accountID)
+  });
+}
 
 // Mutation
 export function useCreateTransaction() {
@@ -41,7 +47,7 @@ export function useCreateTransaction() {
     mutationFn: (payload: CreateTransactionInput) => create_transaction(payload),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['userTransactions'] });
-      navigate("/methods")
+      navigate("/transactions")
     },
   });
 }
@@ -59,7 +65,7 @@ export function useUpdateTransaction() { const queryClient = useQueryClient();
 export function useDeleteTransaction() { const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: ({ id, accountID }: { id: string; accountID: string }) => delete_transaction(id, accountID),
+    mutationFn: ({ id }: { id: string }) => delete_transaction(id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['userTransactions']})
     }

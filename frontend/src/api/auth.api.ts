@@ -1,12 +1,14 @@
 const BACKEND_API = import.meta.env.VITE_BACKEND_API || "http://localhost:5000";
 
 export const checkActiveSessionApi = async () => {
+  console.log("checking active")
   const response = await fetch(`${BACKEND_API}/auth/cookie/active`, { 
     method: "POST", 
     credentials: "include" 
   });
+  console.log("finished checking: ", await response.json())
   if (!response.ok) throw new Error("Session check failed");
-  return response.json();
+  return await response.json();
 };
 
 export const registerApi = async (email: string, password: string, fname: string, lname: string) => {

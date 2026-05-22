@@ -29,44 +29,57 @@ export const AuthPage = () => {
 
     const [newCredentials, setNewCredentials] = useState<CreateUserInput>({email: "", password: "", fname: "", lname: "", mname: ""})
 
-    const onSubmitLogin = (credentials: LoginCredentials) => {
-        setLoginError({email: "", password: ""})
-        credentials.email = credentials.email.trim()
-        if (!credentials.email){
-            setLoginError((prev) => ({...prev, email: "Email is required"} as LoginError))
+    const onSubmitLogin = async (credentials: LoginCredentials) => {
+        const email = credentials.email.trim()
+        const password = credentials.password
+        const nextErrors: LoginError = { email: "", password: "" }
+
+        if (!email){
+            nextErrors.email = "Email is required"
         }
-        if (!credentials.password){
-            setLoginError((prev) => ({...prev, password: "Password is required"} as LoginError))
+        if (!password){
+            nextErrors.password = "Password is required"
         }
 
-        if (LoginError?.email || LoginError?.password){
+        setLoginError(nextErrors)
+
+        if (nextErrors.email || nextErrors.password){
             return
         }
-        console.log("Login credentials: ", credentials)
-        login(credentials.email, credentials.password);
-        navigate(searchParams.get('from')||"/dashboard", {"replace": true})
+
+        const success = await login(email, password)
+        if (success){
+            navigate(searchParams.get('from')||"/dashboard", {"replace": true})
+        }
     }
 
-    const onSubmitRegister = (credentials: CreateUserInput) => {
-        setRegError({fname: "", email: "", password: ""} as RegisterError)
-        credentials.email = credentials.email.trim()
-        credentials.fname = credentials.fname.trim()
-        credentials.lname = credentials.lname.trim()
-        if (!credentials.fname){
-            setRegError((prev) => ({...prev, fname: "First name is required"} as RegisterError))
+    const onSubmitRegister = async (credentials: CreateUserInput) => {
+        const email = credentials.email.trim()
+        const fname = credentials.fname.trim()
+        const lname = credentials.lname.trim()
+        const password = credentials.password
+        const nextErrors: RegisterError = { fname: "", email: "", password: "" }
+
+        if (!fname){
+            nextErrors.fname = "First name is required"
         }
-        if (!credentials.email){
-            setRegError((prev) => ({...prev, email: "Email is required"} as RegisterError))
+        if (!email){
+            nextErrors.email = "Email is required"
         }
-        if (!credentials.password){
-            setRegError((prev) => ({...prev, password: "Password is required"} as RegisterError))
+        if (!password){
+            nextErrors.password = "Password is required"
         }
 
-        if (RegError?.email || RegError?.password || RegError?.fname){
+        setRegError(nextErrors)
+
+        if (nextErrors.email || nextErrors.password || nextErrors.fname){
             return
         }
-        console.log("Registration credentials: ", credentials)
-        register(credentials.email, credentials.password, credentials.fname, credentials.lname)
+
+        const success = await register(email, password, fname, lname)
+        if (success){
+            navigate(searchParams.get('from')||"/dashboard", {"replace": true})
+        }
     }
 
     if (loading){
@@ -94,7 +107,7 @@ export const AuthPage = () => {
                                 {error && <Text className="text-red-500">{error}</Text>}
                                 <Flex gap="2">
                                 <Button onClick={() => setmode(false)}>Sign Up</Button>
-                                <Button onClick={() => onSubmitLogin(loginCredentials)}>Login</Button>
+                                <Button onClick={() => { void onSubmitLogin(loginCredentials) }}>Login</Button>
                                 </Flex>
                             </Flex>
                         ) : (
@@ -133,7 +146,7 @@ export const AuthPage = () => {
                                 {RegError?.password && <Text className="text-red-500">{RegError.password}</Text>}
                                 <Flex gap="2">
                                     <Button onClick={() => setmode(true)}>Login</Button>
-                                    <Button onClick={() => onSubmitRegister(newCredentials)}>Register</Button>
+                                    <Button onClick={() => { void onSubmitRegister(newCredentials) }}>Register</Button>
                                 </Flex>
                             </Flex>
 

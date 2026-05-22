@@ -21,7 +21,7 @@ function App() {
       <BrowserRouter>
         <AuthProvider>
           <Routes>
-            <Route path="/auth" element={<AuthPage />} />
+              <Route path="/auth" element={<AuthPage />} />
               <Route path="/transactions" element={<TransactionPage />} />
               <Route path="/transactions/create" element={<TransactionCreate />} />
               <Route path="/groups/create" element={<GroupingCreate />} />

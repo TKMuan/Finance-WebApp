@@ -5,11 +5,19 @@ const BACKEND_API = import.meta.env.VITE_BACKEND_API || "http://localhost:5000";
 export const create_transaction = async (data: CreateTransactionInput) => {
     console.log("create_transaction called")
     console.log("data: ", data)
+    const {
+        tType, ...payload
+    } = data
+    payload
+    console.log("payload data: ", payload)
     const response = await fetch(`${BACKEND_API}/transactions/`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         credentials: "include",
-        body: JSON.stringify(data)
+        body: JSON.stringify({...payload,
+        groups: data.groups.map(record=> record.id),
+        method: data.method.id,
+        type: data.tType})
     })
 
     if (!response.ok) throw new Error("");
@@ -77,15 +85,30 @@ export const retrieve_transaction = async (id: string, accountID: string) => {
     return recieved.data;
 }
 
-export const delete_transaction = async (id: string, accountID: string) => {
+export const delete_transaction = async (id: string,) => {
     const query = new URLSearchParams({
-        "id": id,
-        "accountID": accountID
+        "transID": id,
     })
     const response = await fetch(`${BACKEND_API}/transactions/?${query.toString()}`, {
         method: "DELETE",
         credentials: "include",
     })
+    if (!response.ok) throw new Error("");
+    const recieved = await response.json();
+    console.log("recieved: ", recieved)
+    return recieved.data;
+}
+
+export const retrieve_transaction_dashboard = async (accountID: string) => {
+    const query = new URLSearchParams({
+        accountID: accountID
+    });
+
+    const response = await fetch(`${BACKEND_API}/transactions/dashboard?${query.toString()}`, {
+        method: "GET",
+        credentials: "include",
+    })
+
     if (!response.ok) throw new Error("");
     const recieved = await response.json();
     console.log("recieved: ", recieved)

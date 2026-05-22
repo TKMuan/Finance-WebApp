@@ -2,8 +2,8 @@ import { Flex, DropdownMenu, Box, Text, TextField, Button, Card, Badge, Spinner 
 import { useAuth } from '../hooks'
 import { useEffect, useState} from 'react'
 import type { Dispatch, SetStateAction} from 'react'
-import { useNavigate, type NavigateFunction } from 'react-router-dom'
-import { SearchIcon, Trash2, Eye, X, FilterIcon, ArrowLeft, ArrowRight, ArrowDown } from 'lucide-react'
+import { useNavigate } from 'react-router-dom'
+import { SearchIcon, Trash2, X, FilterIcon, ArrowLeft, ArrowRight, ArrowDown } from 'lucide-react'
 import { useGetTransactions, useDeleteTransaction, useGetGroups, useGetMethods} from '../hooks'
 import type { UserMethods, UserGroupings, Transaction, TransactionFilter } from '../types'
 import { DateSelection } from '../components'
@@ -168,15 +168,14 @@ const FiltersSelection = ({updateFilter}: FilterProps) => {
 }
 interface TransactionDisplayProp {
     record: Transaction,
-    navigate: NavigateFunction
 }
-const TransactionDisplayComponent = ({record, navigate}: TransactionDisplayProp) => {
+const TransactionDisplayComponent = ({record}: TransactionDisplayProp) => {
 
-    const { user } = useAuth()
     const [confirmDelete, setConfirmDelete] = useState<boolean>(false)
     const {isPending: pendingDelete, mutate: deleteMethod} = useDeleteTransaction()
+
     const handleDelete = () => {
-        deleteMethod({"id": record.id, "accountID": user?.id || ""})
+        deleteMethod({"id": record.id})
         setConfirmDelete(false)
     }
     if (pendingDelete){
@@ -185,8 +184,8 @@ const TransactionDisplayComponent = ({record, navigate}: TransactionDisplayProp)
     return (
         <Flex direction="column">
             <Flex direction="row" justify="between" align="center" className="justify-between">
-                <Flex className="" gap='2' maxWidth={{"sm": "50", "md":"100"}} direction="column">
-                    <Text truncate className='max-w-50 md:max-w-20' >
+                <Flex className="h-fit" gap='2' maxWidth={{"sm": "50", "md":"100"}} direction="column">
+                    <Text truncate className='max-w-50 md:max-w-150' >
                         {record.description}
                     </Text>
                     <Flex gap='2'>
@@ -225,7 +224,6 @@ const TransactionDisplayComponent = ({record, navigate}: TransactionDisplayProp)
                         </Flex> : 
 
                         <Flex>
-                        <Eye onClick={() => navigate('mfe')}/>
                         <Trash2 onClick={() => setConfirmDelete(true)}/>                                
                         </Flex>
                         
@@ -257,7 +255,7 @@ export const TransactionPage = () => {
         "to_date": null,
         "group": null,
         "page": 0,
-        "limit": 2
+        "limit": 10
     })
     
     const {data: transactions, refetch: refetchTrans, isPending} = useGetTransactions(user?.id || "", 0, 25, transFilters)
@@ -300,7 +298,8 @@ export const TransactionPage = () => {
                 <Card>
                     <Flex direction="column" className="h-screen">
                         <Flex className="min-h-100" direction="column" gap='2'>
-                            <Flex justify={'end'} px="1">
+                            <Flex justify={'end'} px="1" gap='2'>
+                                <Button variant='outline' onClick={() => navigate('/transactions/create')}>Create Transaction</Button>
                                 <DropdownMenu.Root >
                                     <DropdownMenu.Trigger>
                                         <Button variant="outline">
@@ -319,7 +318,7 @@ export const TransactionPage = () => {
                             {
                                 transactions ? transactions.data.map((record) => (
                                     <Card key={record.id} id={record.id}>
-                                        <TransactionDisplayComponent record={record} navigate={navigate}/>
+                                        <TransactionDisplayComponent record={record}/>
                                     </Card>
                                 )):<></>
                             }
