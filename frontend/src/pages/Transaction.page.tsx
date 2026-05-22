@@ -188,7 +188,7 @@ const TransactionDisplayComponent = ({record}: TransactionDisplayProp) => {
                     <Text truncate className='max-w-50 md:max-w-150' >
                         {record.description}
                     </Text>
-                    <Flex gap='2'>
+                    <Flex gap='2' className="flex-wrap">
                         <Badge color={record.type ? "red" : "green"}>
                             <Text truncate>
                                 {record.amount}
@@ -205,7 +205,7 @@ const TransactionDisplayComponent = ({record}: TransactionDisplayProp) => {
                             </Text>
                         </Badge>
                     </Flex>
-                    <Flex gap='2'>
+                    <Flex gap='2' className="flex-wrap">
                         {
                             record.groups?.map((groupRecord) => (
                                 <Badge key={groupRecord.id} id={groupRecord.id}>
@@ -278,25 +278,25 @@ export const TransactionPage = () => {
     return (
         <Box className="w-full p-5">
             <Text className="pt-3">Welcome to your transactions page!</Text>
-            <Card className="w-full min-h-[10rem] mt-4 mb-4">
-                        <Text>
-                            Transaction List
-                        </Text>
-                        <Flex align="center" gap="2" my="2">
-                            <TextField.Root className="w-full" onChange={((e) => updateDesc(e.target.value))}>
-                            </TextField.Root>
-                            <SearchIcon onClick={() => setTransFilters((prev) => ({...prev, desc: desc || null}))}/>
-                            <FilterIcon onClick={() => setShowFilters((prev) => !prev)}/>
-                        </Flex>
-                        <Flex justify="end" direction="column">
-                        <Flex justify={"end"} className='w-full'>
-                        </Flex>
-                        {
-                            showFilters && <FiltersSelection updateFilter={setTransFilters}/>
-                        }
-                        </Flex>
-                <Card>
-                    <Flex direction="column" className="h-screen">
+            <Card className="w-full min-h-[10] h-vh mt-4 mb-4">
+                <Text>
+                    Transaction List
+                </Text>
+                <Flex align="center" gap="2" my="2">
+                    <TextField.Root className="w-full" onChange={((e) => updateDesc(e.target.value))}>
+                    </TextField.Root>
+                    <SearchIcon onClick={() => setTransFilters((prev) => ({...prev, desc: desc || null}))}/>
+                    <FilterIcon onClick={() => setShowFilters((prev) => !prev)}/>
+                </Flex>
+                <Flex justify="end" direction="column">
+                <Flex justify={"end"} className='w-full'>
+                </Flex>
+                {
+                    showFilters && <FiltersSelection updateFilter={setTransFilters}/>
+                }
+                </Flex>
+                <Card className="h-full">
+                    <Flex direction="column" className="">
                         <Flex className="min-h-100" direction="column" gap='2'>
                             <Flex justify={'end'} px="1" gap='2'>
                                 <Button variant='outline' onClick={() => navigate('/transactions/create')}>Create Transaction</Button>
