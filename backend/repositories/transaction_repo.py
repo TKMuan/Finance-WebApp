@@ -263,7 +263,7 @@ class TransactionsRepo(BaseRepo):
         month = today.month
         year = today.year
         select_query = sql.SQL("""
-            SELECT sum({trans}.{amount}), {method}.{name}
+            SELECT sum({trans}.{amount}::numeric), {method}.{name}
             FROM {trans} LEFT JOIN {method}
             ON {trans}.{methodcol} = {method}.{id}
             WHERE {trans}.{aid} = %s AND {trans}.{ttime} >= %s AND {trans}.{ttime} <= %s AND {trans}.{type} = %s
@@ -280,8 +280,8 @@ class TransactionsRepo(BaseRepo):
     type=sql.Identifier("type")
 )
         _, enddate = monthrange(year, month)
+
         with conn.cursor(cursor_factory=RealDictCursor) as curr:
-            
             curr.execute(select_query, (aid,datetime.combine(day, time.min), datetime.combine(day, time.max), True))
             day_stats = curr.fetchall()
             curr.execute(select_query, (aid,date(year, month, 1), date(year, month, enddate), True))
@@ -290,6 +290,34 @@ class TransactionsRepo(BaseRepo):
             year_stats = curr.fetchall()
     
         return {"day": day_stats, "month": month_stats, "year": year_stats}
+    
+    def get_balance(self, conn: connection, aid:str):
+
+        select_query = sql.SQL("""
+            SELECT sum(
+                CASE WHEN {trans}.{type} THEN {trans}.{amount}::numeric * -1 ELSE {trans}.{amount}::numeric END)
+                , {method}.{name}, {method}.{id}
+            FROM {trans} LEFT JOIN {method}
+            ON {trans}.{methodcol} = {method}.{id}
+            WHERE {trans}.{aid} = %s
+            GROUP BY {trans}.{methodcol}, {method}.{name}, {method}.{id}
+""").format(
+    trans=sql.Identifier("transactions"),
+    amount=sql.Identifier("amount"),
+    method=sql.Identifier("userMethods"),
+    methodcol=sql.Identifier("method"),
+    name=sql.Identifier("name"),
+    id=sql.Identifier('id'),
+    aid=sql.Identifier('accountID'),
+    ttime=sql.Identifier('transaction_time'),
+    type=sql.Identifier("type")
+)
+        with conn.cursor(cursor_factory=RealDictCursor) as curr:
+            curr.execute(select_query, (aid, ))
+            balance = curr.fetchall()
+        
+        return balance
+
 
 class TransactionsGroupRepo(BaseRepo):
     def _get_table(self):

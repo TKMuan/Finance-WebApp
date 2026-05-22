@@ -194,4 +194,7 @@ class TransactionsService:
         data = self.repo.dashboard_stats(conn, accountID)
 
         return data
-    
+
+    def get_balance(self, conn: connection, accountID: str):
+
+        return self.repo.get_balance(conn, accountID)

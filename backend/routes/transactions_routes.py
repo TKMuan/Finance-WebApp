@@ -137,4 +137,21 @@ def get_transaction_dashboard():
         return APIUtil.error_response(ErrorCodes.BASE, str(e))
 
 
+@TransactionsBlueprint.route("/balance", methods=['GET'])
+def get_user_balance():
+    try: 
+        data = request.args.to_dict()
+        service = current_app.TransactionService
+
+        logger.debug(f"RETRIEVING USER TRANSACTIONS")
+        logger.debug(f"recieved data:{data}")
+        
+        with get_db_connection() as conn:
+                res = service.get_balance(conn, **data)
+        
+        return APIUtil.success_response(SuccessCodes.RETRIEVED, {"data": res}, "Retrieved Dashboard Stats")
+    except Exception as e:
+        logger.error(str(e))
+        raise
+        return APIUtil.error_response(ErrorCodes.BASE, str(e))
 
