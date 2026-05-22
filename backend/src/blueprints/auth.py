@@ -13,9 +13,6 @@ JWT_ACCESS_TOKEN_EXPIRES = int(os.getenv("JWT_ACCESS_TOKEN_EXPIRES", 900))  # in
 JWT_REFRESH_TOKEN_EXPIRES = int(os.getenv("JWT_REFRESH_TOKEN_EXPIRES", 2592000))  # in minutes
 
 auth = Blueprint('auth', __name__, url_prefix='/auth')
-cors_origins = os.getenv('CORS_ALLOWED_ORIGINS', '')
-origins_list = [origin.strip() for origin in cors_origins.split(',') if origin.strip()]
-CORS(auth, supports_credentials=True, resources={r"/*": {"origins": origins_list}})
 
 @auth.route('/cookie/active', methods=['POST'])
 def check_active_login():
