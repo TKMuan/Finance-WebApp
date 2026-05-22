@@ -1,8 +1,7 @@
 import { Flex, Button, Text, Grid, Box, Card, Badge, Spinner } from '@radix-ui/themes'
-import { GeneralPage } from '../components/GeneralPage'
 import { useNavigate } from 'react-router-dom'
 import { useAuth, useGetTransactionDashboard, useGetTransactions } from '../hooks'
-import { useEffect, useState } from 'react'
+import { useEffect } from 'react'
 import type { Transaction, TransactionDashboard } from '../types'
 
 interface TransactionDisplayProp {
