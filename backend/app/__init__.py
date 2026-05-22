@@ -40,12 +40,8 @@ def create_app(config_class=DevelopmentConfig):
     cors.init_app(
         app, 
         supports_credentials=True,
-        origins=['https://financewebapp-zwfz.onrender.com', 'http://localhost:5173']
+        origins=['https://financewebapp-zwfz.onrender.com'],
     )
-
-    logger.debug(f"{app.config.get('CORS_ORIGINS')}")
-    print(f"{app.config.get('CORS_ORIGINS')}")
-#                  resources={r"/*": {"origins": config_class.CORS_ALLOWED_ORIGINS.split(',')}})
     
     # Register services as app attributes
     db_conn = get_db_connection
@@ -83,7 +79,7 @@ def create_app(config_class=DevelopmentConfig):
         if request.method == 'OPTIONS':
             response = jsonify()
             response.status_code = 200
-            response.headers.add("Access-Control-Allow-Origin", "http://localhost:5173")
+            response.headers.add("Access-Control-Allow-Origin", "https://financewebapp-zwfz.onrender.com")
             response.headers.add("Access-Control-Allow-Headers", "Content-Type,Authorization")
             response.headers.add("Access-Control-Allow-Methods", "GET,POST,PUT,DELETE,OPTIONS")
             response.headers.add("Access-Control-Allow-Credentials", "true")
