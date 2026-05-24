@@ -73,7 +73,7 @@ class TransactionsRepo(BaseRepo):
         FROM "transactions" LEFT JOIN "userMethods" 
         on trans.accountID = methods.accountID """
         select_query = sql.SQL("""
-            SELECT {trans}.{id}, {trans}.{desc}, {trans}.{ttime}, {trans}.{aid}, {trans}.{amount}, {trans}.{type}, {trans}.{method}, {methods}.{name}
+            SELECT {trans}.{id}, {trans}.{desc}, {trans}.{ttime}, {trans}.{aid}, {trans}.{amount}::numeric, {trans}.{type}, {trans}.{method}, {methods}.{name}
             FROM {trans} LEFT JOIN {methods} 
             ON {trans}.{aid} = {methods}.{aid} 
             WHERE"""
@@ -213,13 +213,18 @@ class TransactionsRepo(BaseRepo):
                 sql.SQL("{table}.{col}").format(table=table, col=col) for table, col in columns
             ])
         else: 
-            select_columns = sql.SQL("{trans}.*, {method}.{id} as {mid}, {method}.{name} as {mname}").format(
+            select_columns = sql.SQL("{trans}.{id}, {trans}.{amount}::numeric, {trans}.{accountID}, {trans}.{desc}, {trans}.{type}, {trans}.{t_time}, {method}.{id} as {mid}, {method}.{name} as {mname}").format(
                 trans=sql.Identifier("transactions"),
+                accountID=sql.Identifier('accountID'),
+                amount=sql.Identifier('amount'),
+                desc=sql.Identifier('description'),
+                type=sql.Identifier('type'),
+                t_time=sql.Identifier('transaction_time'),
                 method=sql.Identifier("userMethods"),
                 id=sql.Identifier("id"),
                 name=sql.Identifier("name"),
                 mname=sql.Identifier("methodName"),
-                mid=sql.Identifier("methodID")
+                mid=sql.Identifier("method")
             )
 
         select_query = sql.SQL("""

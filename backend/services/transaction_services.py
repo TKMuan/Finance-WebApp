@@ -80,7 +80,6 @@ class TransactionsService:
     
     def update_transaction(self, trans: connection, data: dict[str, Any]):
         logger.debug(f"Recieved data: {data}")
-        deleted_groups = data.pop("deleted_groups", [])
         groups = data.pop("groups")
 
         time = datetime.now()
@@ -88,9 +87,8 @@ class TransactionsService:
         transID = data['id']
         result = self.repo.update_transactions(trans, data)
 
-        for group in deleted_groups:
-            where_conditions = {"transactionID": transID, "groupID": group} 
-            self.groupRepo.delete_transaction_group(trans, where_conditions)
+        where_conditions = {"transactionID": transID} 
+        self.groupRepo.delete_transaction_group(trans, where_conditions)
 
         for group in groups:
             tgData = {
@@ -172,7 +170,8 @@ class TransactionsService:
         logger.debug(f"offset: {limit * page}")
 
         res = self.repo.get_all_user_transactions(
-            conn, 
+            conn,
+            desc=desc,
             accountID=accountID,
             from_date=from_date,
             to_date=to_date,
