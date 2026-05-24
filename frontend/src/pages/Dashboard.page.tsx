@@ -1,8 +1,9 @@
-import { Flex, Button, Text, Grid, Box, Card, Badge, Spinner } from '@radix-ui/themes'
+import { Popover,Flex, Button, Text, Grid, Box, Card, Badge, Spinner } from '@radix-ui/themes'
 import { useNavigate } from 'react-router-dom'
 import { useAuth, useGetTransactionBalance, useGetTransactionDashboard, useGetTransactions } from '../hooks'
 import { useEffect, useMemo } from 'react'
 import type { Transaction, TransactionDashboard } from '../types'
+import { LogOut, User } from 'lucide-react'
 
 interface TransactionDisplayProp {
     record: Transaction,
@@ -50,7 +51,7 @@ const TransactionDisplayComponent = ({record}: TransactionDisplayProp) => {
 }
 
 export function Dashboard() {
-  const {user, loading} = useAuth()
+  const {user, logout, loading} = useAuth()
   const navigate = useNavigate()
   const {data: recentTransaction, isPending: gettingTransactions} = useGetTransactions(user?.id || "", 0, 10,{
         "from_amount":  null,
@@ -94,7 +95,27 @@ export function Dashboard() {
       <Box className="w-full p-5">
         <Text>Welcome to your dashboard!</Text>
           <Card className="w-full min-h-[10] mt-4 grow">
-            <Text>Spending Analysis</Text>
+            <Flex gap='2' justify={'between'}>
+              <Text>Spending Analysis</Text>
+              <Flex>
+                <Popover.Root>
+                  <Popover.Trigger>
+                    <Button variant="soft">
+                      <User/>
+                    </Button>
+                  </Popover.Trigger>
+                  <Popover.Content width="360px">
+                    <Flex gap="3" direction="column">
+                      <Text>Username: {user?.fname}</Text>
+                      <Text>Email: {user?.email}</Text>
+                    </Flex>
+                    <Flex justify={'center'} mt='2'>
+                      <LogOut onClick={() => {logout(); navigate('/auth', {replace: true})}} />
+                    </Flex>
+                  </Popover.Content>
+                </Popover.Root>
+              </Flex>
+            </Flex>
             <Grid gap="2" className='pt-4 grow gird grid-cols-1' columns={{sm: '1', md:'2', lg:'4'}} justify={"center"} >
               <Card className="min-h-8 grow">
                 <Text>
@@ -181,17 +202,20 @@ export function Dashboard() {
               }
             </Flex>
           </Card>
-          <Grid m="4" gap="2" columns={{initial: '2', md: "4"}}>
-            <Button onClick={() => navigate("/transactions")}>
-              <Text>Manage Transactions</Text>
-            </Button>
-            <Button onClick={() => navigate("/groups")}>
-              <Text>Manage Groups</Text>
-            </Button>
-            <Button onClick={() => navigate("/methods")}>
-              <Text>Manage Methods</Text>
-            </Button>
-          </Grid>
+          <Flex className="grow" justify="center" gap='2' mt='2'>
+              <Button className="grow" variant='outline' onClick={() => navigate("/groups")}>
+                <Text>Manage Groups</Text>
+              </Button>
+              <Button className='grow' variant='outline'onClick={() => navigate("/methods")}>
+                <Text>Manage Methods</Text>
+              </Button>
+          </Flex>
+            <Flex justify="center" mt='2'>
+              <Button className="w-full grow" variant='outline' onClick={() => navigate("/transactions")}>
+                <Text>Manage Transactions</Text>
+              </Button>
+
+            </Flex>
       </Box>
 
     </Flex>

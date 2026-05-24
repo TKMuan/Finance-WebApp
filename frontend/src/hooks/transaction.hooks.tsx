@@ -1,4 +1,4 @@
-import type { Pagination, Transaction, CreateTransactionInput, TransactionFilter} from "../types";
+import type { Pagination, Transaction, CreateTransactionInput, TransactionFilter, UpdateTransactionInput} from "../types";
 import { useQuery, queryOptions, useQueryClient, useMutation } from "@tanstack/react-query"
 import { retrieve_transaction, retrieve_transaction_balance, retrieve_all_transactions, create_transaction, update_transaction, delete_transaction, retrieve_transaction_dashboard} from "../api";
 import { useNavigate } from "react-router-dom";
@@ -61,7 +61,7 @@ export function useCreateTransaction() {
 export function useUpdateTransaction() { const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (payload: Transaction) => update_transaction(payload),
+    mutationFn: (payload: UpdateTransactionInput) => update_transaction(payload),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['userTransactions']})
     }

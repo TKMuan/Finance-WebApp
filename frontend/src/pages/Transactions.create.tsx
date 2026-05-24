@@ -1,10 +1,11 @@
-import { Spinner, Flex, Box, Text, TextField, Button, Card, DropdownMenu } from '@radix-ui/themes'
+import { Link, RadioCards, Callout, Spinner, Flex, Box, Text, TextField, Button, Card, DropdownMenu } from '@radix-ui/themes'
 import { useAuth, useGetMethods, useGetGroups, useCreateTransaction } from '../hooks'
 import { DateSelection } from '../components'
 import { useEffect, useState } from 'react'
 import type { CreateTransactionInput, UserGroupings } from '../types'
 import './transactions.create.css'
 import { useNavigate } from 'react-router-dom'
+import { Info } from 'lucide-react'
 
 export const TransactionCreate = () => {
     const {user, loading} = useAuth()
@@ -23,7 +24,7 @@ export const TransactionCreate = () => {
         transaction_time: selectedDate,
         accountID: user?.id || "",
         groups: [],
-        tType: true
+        type: true
     })
 
     useEffect(() => {
@@ -54,55 +55,92 @@ export const TransactionCreate = () => {
         <Box className="w-full p-5">
             <Text>New Transaction</Text>
             <Card className="w-full min-h-[10rem] mt-4 mb-4">
-                <Flex gap='2' direction='column'>
+                <Flex gap='4' direction='column'>
+                    <Text>Amount</Text>
                     <TextField.Root placeholder="Amount" type="number" required={true} 
                         value={FormData.amount} 
                         onChange={(e) => setFormData({...FormData, amount: parseFloat(e.target.value)})}/>
+                    <Text>Description</Text>
                     <TextField.Root placeholder="Description" 
                         value={FormData.description} 
                         onChange={(e) => setFormData({...FormData, description: e.target.value})}/>
                     
                     <Flex gap="2" justify="start">
-                    <DropdownMenu.Root>
-                        <DropdownMenu.Trigger>
-                            <Button>
-                                {FormData.method.id ? FormData.method.name: "Select Method"}
-                            </Button>
-                        </DropdownMenu.Trigger>
-                        <DropdownMenu.Content>
-                            { userMethodData?.data.map((record) => (
-                                <DropdownMenu.Item id={record.id} onClick={() => setFormData(prev => ({...prev, method: record}))}>
-                                        {record.name}
-                                </DropdownMenu.Item>
-                            ))}
-                        </DropdownMenu.Content>
-                    </DropdownMenu.Root>
-
-                    <DropdownMenu.Root>
-                        <DropdownMenu.Trigger>
-                            <Button>
-                                {FormData.tType ? "Debit": "Credit"}
-                            </Button>
-                        </DropdownMenu.Trigger>
-                        <DropdownMenu.Content>
-                            <DropdownMenu.Item onClick={() => setFormData((prev) => ({...prev, tType: true}))}>
-                                Debit
-                            </DropdownMenu.Item>
-                            <DropdownMenu.Item onClick={() => setFormData((prev) => ({...prev, tType: false}))}>
-                                Credit
-                            </DropdownMenu.Item>
-                            
-                        </DropdownMenu.Content>
-                    </DropdownMenu.Root>
+                    <Box maxWidth="600px">
+                        <Text mt="2" mb='4'>Type of Transaction</Text>
+                        <RadioCards.Root mt="2" defaultValue="1" columns={{ initial: "1", sm: "3" }}>
+                            <RadioCards.Item value="1" onClick={() => setFormData((prev) => ({...prev, type: false}))}>
+                                <Flex direction="column" width="100%">
+                                    <Text>Credit</Text>
+                                </Flex>
+                            </RadioCards.Item>
+                            <RadioCards.Item value="2" onClick={() => setFormData((prev) => ({...prev, type: true}))}>
+                                <Flex direction="column" width="100%">
+                                    <Text>Debit</Text>
+                                </Flex>
+                            </RadioCards.Item>
+                        </RadioCards.Root>
+                    </Box>
 
                     </Flex>
+                    <Text>Transaction Method</Text>
+                    {
+                        userMethodData?.data.length ? 
+                        
+                        <Box maxWidth="600px">
+                            <RadioCards.Root defaultValue="0" columns={{ initial: "1", sm: "3" }}>
+                                {
+                                    userMethodData.data.map((data, index) => (
+                                    <RadioCards.Item id={data.id}value={`${index}`} onClick={() => setFormData((prev) => ({...prev, method: data}))}>
+                                        <Flex direction="column" width="100%">
+                                            <Text>{data.name}</Text>
+                                        </Flex>
+                                    </RadioCards.Item>
+
+                                    )
+
+                                    )
+                                }
+                            </RadioCards.Root>
+                        </Box>
+
+                        : 
+
+                        <Callout.Root>
+                            <Flex align="center" gap="4">
+                            <Callout.Icon>
+                                <Info color="red"/>
+                            </Callout.Icon>
+                            <Callout.Text color="tomato">
+                                You need to create a method of payment to be able to create a transaction
+                            </Callout.Text>
+                            </Flex>
+                            <Flex justify="center">
+                                <Callout.Text>
+                                    <Link onClick={() => navigate('/methods/create')}>Go to Create Method Page?</Link>
+                                </Callout.Text>
+                            </Flex>
+                       </Callout.Root>
+                    }
                     
+                    <Text>Transaction Date</Text>
                     <DateSelection 
                         value={selectedDate} 
                         onChange={setSelectedDate}/>
                     
 
-
+                    <Text>Transaction Groups</Text>
+                    <Card>
+                        <Flex gap="2" className='min-h-4'>
+                            {
+                                FormData.groups.map((record) => (
+                                    <Card id={record.id} onClick={() => removeGroup(record.id)}>
+                                        {record.name}
+                                    </Card>
+                                ))
+                            } 
+                        </Flex>
+                    </Card>
                     <DropdownMenu.Root>
                         <DropdownMenu.Trigger>
                             <Button variant='outline'>
@@ -118,27 +156,16 @@ export const TransactionCreate = () => {
                         </DropdownMenu.Content>
                     </DropdownMenu.Root>
 
-                    <Card>
-                        <Flex gap="2" className='min-h-4'>
-                            {
-                                FormData.groups.map((record) => (
-                                    <Card id={record.id} onClick={() => removeGroup(record.id)}>
-                                        {record.name}
-                                    </Card>
-                                ))
-                            } 
-                        </Flex>
-                    </Card>
                     
-                    <Button onClick={onSubmit} variant='outline'>
+                    <Button onClick={onSubmit}  disabled={userMethodData?.data.length ? false : true} variant='outline'>
                         Create Transaction
                     </Button>
                 </Flex>
-                <Flex justify="center" gap='2' mt='2'>
-                    <Button onClick={() => navigate('/transactions')}>
+                <Flex justify="center" gap='2' mt='6'>
+                    <Button variant='outline' radius='full' onClick={() => navigate('/transactions')}>
                         Back
                     </Button>
-                    <Button onClick={() => navigate('/dashboard')}>
+                    <Button variant='outline' radius='full' onClick={() => navigate('/dashboard')}>
                         Home
                     </Button>
                 </Flex>

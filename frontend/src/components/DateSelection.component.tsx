@@ -40,7 +40,7 @@ export const DateSelection = ({ value, onChange}: DateSelectionProps) => {
     return (
         <DropdownMenu.Root>
             <DropdownMenu.Trigger>
-                <Button variant="outline">{year} / {month + 1} / {day}</Button>
+                <Button variant="ghost">{year} / {month + 1} / {day}</Button>
             </DropdownMenu.Trigger>
             <DropdownMenu.Content className="w-full bg-white rounded-md shadow-lg p-2">
                 <Flex gap='2' direction='column' className="w-full px-4 py-2 items-center justify-center">

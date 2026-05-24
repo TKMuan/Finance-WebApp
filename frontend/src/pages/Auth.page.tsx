@@ -1,4 +1,4 @@
-import { Box, Flex, Text, TextField, Button, Card } from '@radix-ui/themes'
+import { Link, Box, Flex, Text, TextField, Button, Card } from '@radix-ui/themes'
 import { useState } from 'react'
 import type { CreateUserInput, LoginCredentials } from '../types'
 import { useAuth } from '../hooks'
@@ -105,9 +105,9 @@ export const AuthPage = () => {
                                 <TextField.Root placeholder="Enter your password" required={true} type="password" value={loginCredentials.password} onChange={(e) => setLoginCredentials({...loginCredentials, password: e.target.value})} />
                                 {LoginError?.password && <Text className="text-red-500">{LoginError.password}</Text>}
                                 {error && <Text className="text-red-500">{error}</Text>}
-                                <Flex gap="2">
-                                <Button onClick={() => setmode(false)}>Sign Up</Button>
-                                <Button onClick={() => { void onSubmitLogin(loginCredentials) }}>Login</Button>
+                                <Flex gap="2" justify="between" align="center">
+                                    <Button variant='outline' color='green' onClick={() => { void onSubmitLogin(loginCredentials) }}>Login</Button>
+                                    <Link onClick={() => setmode(false)}>Create Account?</Link>
                                 </Flex>
                             </Flex>
                         ) : (
@@ -132,6 +132,7 @@ export const AuthPage = () => {
                                     placeholder="Enter your email" 
                                     value={newCredentials?.email} 
                                     required={true}
+                                    type='email'
                                     onChange={(e) => setNewCredentials({...newCredentials, email: e.target.value})} 
                                 />
                                 {RegError?.email && <Text className="text-red-500">{RegError.email}</Text>}
@@ -144,9 +145,9 @@ export const AuthPage = () => {
                                     onChange={(e) => setNewCredentials({...newCredentials, password: e.target.value})} 
                                 />
                                 {RegError?.password && <Text className="text-red-500">{RegError.password}</Text>}
-                                <Flex gap="2">
-                                    <Button onClick={() => setmode(true)}>Login</Button>
-                                    <Button onClick={() => { void onSubmitRegister(newCredentials) }}>Register</Button>
+                                <Flex gap="2" justify="between" align='center'>
+                                    <Button variant="outline" color='green' onClick={() => { void onSubmitRegister(newCredentials) }}>Register</Button>
+                                    <Link onClick={() => setmode(true)}>Already Registered?</Link>
                                 </Flex>
                             </Flex>
 

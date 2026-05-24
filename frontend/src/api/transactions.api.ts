@@ -1,4 +1,4 @@
-import type { CreateTransactionInput, Transaction, TransactionFilter } from "../types"
+import type { CreateTransactionInput, Transaction, TransactionFilter, UpdateTransactionInput } from "../types"
 
 const BACKEND_API = import.meta.env.VITE_BACKEND_API || "http://localhost:5000";
 
@@ -6,7 +6,7 @@ export const create_transaction = async (data: CreateTransactionInput) => {
     console.log("create_transaction called")
     console.log("data: ", data)
     const {
-        tType, ...payload
+        type, ...payload
     } = data
     payload
     console.log("payload data: ", payload)
@@ -17,7 +17,7 @@ export const create_transaction = async (data: CreateTransactionInput) => {
         body: JSON.stringify({...payload,
         groups: data.groups.map(record=> record.id),
         method: data.method.id,
-        type: data.tType})
+        type: data.type})
     })
 
     if (!response.ok) throw new Error("");
@@ -26,7 +26,7 @@ export const create_transaction = async (data: CreateTransactionInput) => {
     return recieved;
 }
 
-export const update_transaction = async (method_details: Transaction) => {
+export const update_transaction = async (method_details: UpdateTransactionInput) => {
     const response = await fetch(`${BACKEND_API}/transactions/`, {
         method: "PUT",
         credentials: "include",

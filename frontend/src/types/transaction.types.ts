@@ -11,11 +11,21 @@ export interface Transaction {
     transaction_time: Date,
     groups: Omit<UserGroupings, "accountID">[],
 }
+export interface UpdateTransactionInput {
+    id: string,
+    accountID: string,
+    amount: number,
+    description: string,
+    type: boolean,
+    method: string,
+    transaction_time: Date,
+    groups: string[],
+}
 export interface CreateTransactionInput {
     accountID: string,
     amount: number,
     description: string,
-    tType: boolean,
+    type: boolean,
     method: Omit<UserMethods, "accountID">,
     transaction_time: Date,
     groups: Omit<UserGroupings, "accountID">[],

@@ -51,7 +51,7 @@ const GroupDisplayComponent = ({record}: groupDisplayProp) => {
                         confirmDelete ? 
                         <Flex align="center">
                             <X onClick={() => setConfirmDelete(false)}/>
-                            <Button className="method_delete_button" onClick={() => handleDelete()}>Delete</Button>
+                            <Button className="method_delete_button"  onClick={() => handleDelete()}>Delete</Button>
                         </Flex> : 
 
                         <Flex>
@@ -103,7 +103,8 @@ export const GroupingPage = () => {
                         <Search onClick={() => refetch()}/> 
                     </Flex>
                     <Card className="size-full min-h-80">
-                        <Flex className="w-full" mb='4' mx='0' justify="end">
+                        <Flex className="w-full" mb='4' mx='0' gap='2' align="center" justify="end">
+                            <Text>Records: </Text>
                             <DropdownMenu.Root>
                                 <DropdownMenu.Trigger>
                                     <Button variant='outline'>
@@ -143,6 +144,7 @@ export const GroupingPage = () => {
                     <Flex gap='2' align={"center"} justify={'center'} my='2'>
                         <Button 
                             onClick={() => setCurrentPage(prev => prev - 1)}
+                            variant="outline"
                             disabled={currentPage <= 0}
                         >Prev Page
                         </Button>
@@ -150,14 +152,15 @@ export const GroupingPage = () => {
                         <Button 
                             onClick={() => setCurrentPage(prev => prev + 1)}
                             disabled={groups?.data.length !== pageSize}
+                            variant="outline"
                         >Next Page 
                         </Button>
                     </Flex>
 
                 </Card>
                 <Flex justify="center" gap='2'>
-                    <Button onClick={() => navigate("/dashboard")}>Home</Button>
-                    <Button onClick={() => navigate("/groups/create")}>
+                    <Button variant="outline" onClick={() => navigate("/dashboard")}>Home</Button>
+                    <Button variant="outline" onClick={() => navigate("/groups/create")}>
                         Create Grouping
                     </Button>
                 </Flex>
