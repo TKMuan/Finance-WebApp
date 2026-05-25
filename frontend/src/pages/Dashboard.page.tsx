@@ -110,7 +110,7 @@ export function Dashboard() {
                       <Text>Email: {user?.email}</Text>
                     </Flex>
                     <Flex justify={'center'} mt='2'>
-                      <LogOut onClick={() => {logout(); navigate('/auth', {replace: true})}} />
+                      <LogOut onClick={() => {logout(); navigate('/info', {replace: true})}} />
                     </Flex>
                   </Popover.Content>
                 </Popover.Root>
