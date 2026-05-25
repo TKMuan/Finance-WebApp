@@ -5,6 +5,7 @@ import { useEffect, useState } from 'react'
 import { useCreateMethod } from '../hooks/method.hooks'
 import { ChevronLeft } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
+import { LoadingComponent } from '../components'
 
 export const MethodCreate = () => {
 
@@ -40,9 +41,7 @@ export const MethodCreate = () => {
 
     if (isPending){
         return (
-            <Box className="w-full p-5">
-                <Text>Loading...</Text>
-            </Box>
+            <LoadingComponent/>
         )
     }
     return (

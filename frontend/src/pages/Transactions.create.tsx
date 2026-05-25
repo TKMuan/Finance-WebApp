@@ -1,6 +1,6 @@
-import { Link, RadioCards, Callout, Spinner, Flex, Box, Text, TextField, Button, Card, DropdownMenu } from '@radix-ui/themes'
+import { Link, RadioCards, Callout, Flex, Box, Text, TextField, Button, Card, DropdownMenu } from '@radix-ui/themes'
 import { useAuth, useGetMethods, useGetGroups, useCreateTransaction } from '../hooks'
-import { DateSelection } from '../components'
+import { DateSelection, LoadingComponent } from '../components'
 import { useEffect, useState } from 'react'
 import type { CreateTransactionInput, UserGroupings } from '../types'
 import './transactions.create.css'
@@ -49,7 +49,7 @@ export const TransactionCreate = () => {
     }
 
     if (loading || gettingGroups || gettingMethods || creatingTransaction) {
-        return <Spinner/>
+        return <LoadingComponent/>
     }
     return (
         <Box className="w-full p-5">

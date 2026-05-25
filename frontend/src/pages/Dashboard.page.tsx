@@ -1,9 +1,10 @@
-import { Popover,Flex, Button, Text, Grid, Box, Card, Badge, Spinner } from '@radix-ui/themes'
+import { Popover,Flex, Button, Text, Grid, Box, Card, Badge } from '@radix-ui/themes'
 import { useNavigate } from 'react-router-dom'
 import { useAuth, useGetTransactionBalance, useGetTransactionDashboard, useGetTransactions } from '../hooks'
 import { useEffect, useMemo } from 'react'
 import type { Transaction, TransactionDashboard } from '../types'
 import { LogOut, User } from 'lucide-react'
+import { LoadingComponent } from '../components'
 
 interface TransactionDisplayProp {
     record: Transaction,
@@ -85,7 +86,7 @@ export function Dashboard() {
   }, [user])
 
   if (loading || gettingTransactions || gettingDashStat || gettingBalance){
-    return <Spinner></Spinner>
+    return <LoadingComponent/>
   }
   return (
     <Flex direction={'column'} className="K`">

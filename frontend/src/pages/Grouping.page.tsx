@@ -1,9 +1,10 @@
-import { Flex, Box, Text, TextField, Button, Card, Spinner, DropdownMenu } from '@radix-ui/themes'
+import { Flex, Box, Text, TextField, Button, Card, DropdownMenu } from '@radix-ui/themes'
 import { useAuth, useGetGroups, useUpdateGroup, useDeleteGroup } from '../hooks'
 import { useEffect, useState } from 'react'
 import { useNavigate } from "react-router-dom"
 import { Search, Check, Pencil, Trash2, X, ChevronDown } from 'lucide-react'
 import type { UserGroupings } from '../types'
+import { LoadingComponent } from '../components'
 // removed unused useQueryClient import
 
 interface groupDisplayProp{
@@ -86,7 +87,7 @@ export const GroupingPage = () => {
         console.log("Groups: ", groups)
     }, [groups])
     if (loading || isPending){
-    return <Spinner/>
+    return <LoadingComponent/>
     }
 
     return (

@@ -1,4 +1,4 @@
-import { Grid, CheckboxGroup, Flex, RadioGroup, DropdownMenu, Box, Text, TextField, Button, Card, Badge, Spinner, Dialog } from '@radix-ui/themes'
+import { Grid, CheckboxGroup, Flex, RadioGroup, DropdownMenu, Box, Text, TextField, Button, Card, Badge, Dialog } from '@radix-ui/themes'
 import { useAuth, useUpdateTransaction } from '../hooks'
 import { useEffect, useState} from 'react'
 import type { Dispatch, SetStateAction} from 'react'
@@ -6,7 +6,7 @@ import { useNavigate, useSearchParams } from 'react-router-dom'
 import { SearchIcon, Trash2, X, FilterIcon, ArrowLeft, ArrowRight, ArrowDown, Pencil } from 'lucide-react'
 import { useGetTransactions, useDeleteTransaction, useGetGroups, useGetMethods} from '../hooks'
 import type { UserMethods, UserGroupings, Transaction, TransactionFilter, UpdateTransactionInput } from '../types'
-import { DateSelection } from '../components'
+import { DateSelection, LoadingComponent } from '../components'
 
 interface FilterProps {
     updateFilter: Dispatch<SetStateAction<TransactionFilter>>,
@@ -505,7 +505,7 @@ export const TransactionPage = () => {
     }, [transactions])
 
     if (loadingTransactions || loading || loadingMethods || loadingGroups){
-        return <Spinner/>
+        return <LoadingComponent/>
     }
 
     return (

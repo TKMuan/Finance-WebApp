@@ -6,6 +6,7 @@ import { X, Pencil, Trash2, CirclePlus, Check} from 'lucide-react'
 import type { UserMethods } from '../types'
 import { useNavigate } from 'react-router-dom'
 import "./methods.page.css"
+import { LoadingComponent } from '../components'
 
 interface methodDisplayProp {
     record: UserMethods,
@@ -77,11 +78,15 @@ const MethodDisplayComponent = ({record}: methodDisplayProp) => {
 }
 export const MethodsPage = () => {
 
-    const {user} = useAuth()
+    const {user, loading} = useAuth()
 
     const {data: userMethods, isPending} = useGetMethods(user?.id || "")
 
     const navigate = useNavigate();
+
+    if (loading){
+        return <LoadingComponent/>
+    }
 
     return (
         <Box className="w-full p-5">

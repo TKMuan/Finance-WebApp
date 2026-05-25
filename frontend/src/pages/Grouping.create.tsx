@@ -1,9 +1,10 @@
-import { Flex, Box, Text, TextField, Button, Card, Spinner } from '@radix-ui/themes'
+import { Flex, Box, Text, TextField, Button, Card } from '@radix-ui/themes'
 import { useAuth } from '../hooks'
 import { useState } from 'react'
 import './transactions.create.css'
 import { useCreateGroup } from '../hooks'
 import { useNavigate } from 'react-router-dom'
+import { LoadingComponent } from '../components'
 
 export const GroupingCreate = () => {
 
@@ -30,7 +31,7 @@ export const GroupingCreate = () => {
     }
 
     if (loading || isPending){
-        return <Spinner/>
+        return <LoadingComponent/>
     }
 
     return (

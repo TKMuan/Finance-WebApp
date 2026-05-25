@@ -9,8 +9,8 @@ import { useNavigate } from "react-router-dom"
     return (
         <Flex className="w-full h-full" justify="center" direction="column" gap="4">
             <Flex className="w-full" justify="start" mx='4' mt="6" mb="4" direction={'column'}>
-                <Text className="font-bold italic " size="6">About The App</Text>
-                <Text></Text>
+                <Text className="font-bold italic " mb="4" size="6">About The App</Text>
+                <Text className="" mt="2">Finance-Webapp is a lightweigh personal finance management tool to help users track their spending habits. The app features the following key components</Text>
             </Flex>
             <Flex mx="2" direction={'column'} justify={'start'} align={'start'}>
                 <Text className="font-bold">
@@ -58,7 +58,7 @@ import { useNavigate } from "react-router-dom"
                 </Text>
                 <Blockquote className="" mb="4">
                     <Flex direction="column" gap='4'>
-                    <Text>For users that want to use the web app Go to a website with a web app that you want to install.from the homescreen follow the following steps: </Text>
+                    <Text>For mobile users that want to use the web app from their homescreen follow the following steps: </Text>
                     <SegmentedControl.Root value={mode}>
                         <SegmentedControl.Item value="android" onClick={() => setMode('android')}>Android</SegmentedControl.Item>
                         <SegmentedControl.Item value="ios" onClick={() => setMode('ios')}>IOS</SegmentedControl.Item>
