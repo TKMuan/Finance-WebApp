@@ -9,7 +9,8 @@ import {
   GroupingPage,
   GroupingCreate,
   MethodCreate,
-  MethodsPage
+  MethodsPage,
+  InfoPage
 } from './pages'
 import { AuthProvider } from './context'
 
@@ -29,7 +30,8 @@ function App() {
               <Route path="/methods/create" element={<MethodCreate />} />
               <Route path="/methods" element={<MethodsPage />} />
               <Route path="/dashboard/*" element={<Dashboard />} />
-              <Route path="/*" element={<Dashboard />} />
+              <Route path="/info" element={<InfoPage/>}/>
+              <Route path="/*" element={<InfoPage />} />
           </Routes>
         </AuthProvider>
       </BrowserRouter>

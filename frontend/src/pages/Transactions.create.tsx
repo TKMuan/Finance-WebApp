@@ -20,11 +20,11 @@ export const TransactionCreate = () => {
     const [FormData, setFormData] = useState<CreateTransactionInput>({
         amount: 0,
         description: "",
-        method: {id: "", name: ""},
+        method: userMethodData?.data[0] || {id: "", name: ''},
         transaction_time: selectedDate,
         accountID: user?.id || "",
         groups: [],
-        type: true
+        type: false
     })
 
     useEffect(() => {
