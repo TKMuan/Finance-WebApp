@@ -1,7 +1,6 @@
-import { Popover,Flex, Button, Text, Grid, Box, Card, Badge } from '@radix-ui/themes'
+import { useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth, useGetTransactionBalance, useGetTransactionDashboard, useGetTransactions } from '../hooks'
-import { useEffect, useMemo } from 'react'
 import type { Transaction, TransactionDashboard } from '../types'
 import { LogOut, User } from 'lucide-react'
 import { LoadingComponent } from '../components'
@@ -9,63 +8,54 @@ import { LoadingComponent } from '../components'
 interface TransactionDisplayProp {
     record: Transaction,
 }
+
 const TransactionDisplayComponent = ({record}: TransactionDisplayProp) => {
+  const isDebit = record.type
 
-    return (
-        <Flex direction="column">
-            <Flex direction="row" justify="between" align="center" className="justify-between">
-                <Flex className="" gap='2' maxWidth={{"sm": "50", "md":"100"}} direction="column">
-                    <Text truncate className='max-w-50 md:max-w-150' >
-                        {record.description}
-                    </Text>
-                    <Flex gap='2'>
-                        <Badge color={record.type ? "red" : "green"}>
-                            <Text truncate>
-                                {record.amount}
-                            </Text>
-                        </Badge>
-                        <Badge>
-                            <Text truncate>
-                                {record.methodName}
-                            </Text>
-                        </Badge>
-                        <Badge>
-                            <Text truncate>
-                                {record.transaction_time.getDate()}-{record.transaction_time.getMonth() + 1}-{record.transaction_time.getFullYear()}
-                            </Text>
-                        </Badge>
-                    </Flex>
-                    <Flex gap='2'>
-                        {
-                            record.groups?.map((groupRecord) => (
-                                <Badge key={groupRecord.id} id={groupRecord.id}>
-                                    {groupRecord.name}
-                                </Badge>
-                            ))
-                        }
-                    </Flex>
-                </Flex>
-            </Flex>
-        </Flex>
-    )
-
+  return (
+    <div className={`transaction-card ${isDebit ? 'transaction-card--debit' : 'transaction-card--credit'}`}>
+      <div className="transaction-card__body">
+        <p className="transaction-title">{record.description}</p>
+        <div className="transaction-meta-row">
+          <span className={`transaction-pill transaction-amount-${isDebit ? '--debit' : '--credit'}`}>
+            $ {record.amount}
+          </span>
+          <span className={`transaction-pill ${isDebit ? 'transaction-pill--debit' : 'transaction-pill--credit'}`}>
+            {record.methodName}
+          </span>
+          <span className={`transaction-pill ${isDebit ? 'transaction-pill--debit' : 'transaction-pill--credit'}`}>
+            {record.transaction_time.getDate()}-{record.transaction_time.getMonth() + 1}-{record.transaction_time.getFullYear()}
+          </span>
+        </div>
+        <div className="transaction-group-row">
+          {record.groups?.map((groupRecord) => (
+            <span key={groupRecord.id} id={groupRecord.id} className={`transaction-pill ${isDebit ? 'transaction-pill--debit' : 'transaction-pill--credit'}`}>
+              {groupRecord.name}
+            </span>
+          ))}
+        </div>
+      </div>
+    </div>
+  )
 }
 
 export function Dashboard() {
   const {user, logout, loading} = useAuth()
   const navigate = useNavigate()
+  const [profileOpen, setProfileOpen] = useState(false)
+
   const {data: recentTransaction, isPending: gettingTransactions} = useGetTransactions(user?.id || "", 0, 10,{
-        "from_amount":  null,
-        "to_amount":  null,
-        "desc": null,
-        "tType": null,
-        "method": null,
-        "from_date": null,
-        "to_date": null,
-        "group": null,
-        "page": 0,
-        "limit": 10
-  }) 
+    "from_amount":  null,
+    "to_amount":  null,
+    "desc": null,
+    "tType": null,
+    "method": null,
+    "from_date": null,
+    "to_date": null,
+    "group": null,
+    "page": 0,
+    "limit": 10
+  })
   const {data: dashboardStats, isPending: gettingDashStat} = useGetTransactionDashboard(user?.id || "")
   const {data: balanceData, isPending: gettingBalance} = useGetTransactionBalance(user?.id || "")
 
@@ -80,145 +70,141 @@ export function Dashboard() {
     }
   }, [dashboardStats])
 
-  useEffect(() => {
-    console.log("user: ", user)
-    console.log("dash: ", dashboardStats)
-  }, [user])
-
-  if (loading || gettingTransactions || gettingDashStat || gettingBalance){
-    return <LoadingComponent/>
+  if (loading || gettingTransactions || gettingDashStat || gettingBalance) {
+    return <LoadingComponent />
   }
+
+  const statCards = [
+    {
+      key: 'day',
+      title: 'Day Spending Total',
+      total: spendingTotals.day,
+      items: dashboardStats?.data?.day || [],
+      cardClass: 'app-stat-card--day',
+      pillClass: 'app-pill--day',
+    },
+    {
+      key: 'month',
+      title: 'Month Spending Total',
+      total: spendingTotals.month,
+      items: dashboardStats?.data?.month || [],
+      cardClass: 'app-stat-card--month',
+      pillClass: 'app-pill--month',
+    },
+    {
+      key: 'year',
+      title: 'Year Spending Total',
+      total: spendingTotals.year,
+      items: dashboardStats?.data?.year || [],
+      cardClass: 'app-stat-card--year',
+      pillClass: 'app-pill--year',
+    },
+    {
+      key: 'balance',
+      title: 'Methods Balances',
+      items: balanceData?.data || [],
+      cardClass: 'app-stat-card--balance',
+      pillClass: 'app-pill--balance',
+    },
+  ]
+
   return (
-    <Flex direction={'column'} className="K`">
-        <Box className="bg-gradient-to-br from-black to-black w-full " px="5" py="4" bottom="5">
-          <Text className="text-white" size="6">Dashboard</Text>
-        </Box>
-      <Box className="w-full p-5">
-        <Text>Welcome to your dashboard!</Text>
-          <Card className="w-full min-h-[10] mt-4 grow">
-            <Flex gap='2' justify={'between'}>
-              <Text>Spending Analysis</Text>
-              <Flex>
-                <Popover.Root>
-                  <Popover.Trigger>
-                    <Button variant="soft">
-                      <User/>
-                    </Button>
-                  </Popover.Trigger>
-                  <Popover.Content width="360px">
-                    <Flex gap="3" direction="column">
-                      <Text>Username: {user?.fname}</Text>
-                      <Text>Email: {user?.email}</Text>
-                    </Flex>
-                    <Flex justify={'center'} mt='2'>
-                      <LogOut onClick={() => {logout(); navigate('/info', {replace: true})}} />
-                    </Flex>
-                  </Popover.Content>
-                </Popover.Root>
-              </Flex>
-            </Flex>
-            <Grid gap="2" className='pt-4 grow gird grid-cols-1' columns={{sm: '1', md:'2', lg:'4'}} justify={"center"} >
-              <Card className="min-h-8 grow">
-                <Text>
-                  Day Spending Total: 
-                </Text>
-                <Text mx="2">{spendingTotals.day}</Text>
-                <Flex className="" gap="2" mt='2' direction="column">
-                  {
-                    (dashboardStats?.data?.day || []).map((record: TransactionDashboard) => (
-                      <Badge key={`day-${record.name}`}>
-                        <Flex gap='2'>
-                        <Text>{record.name}</Text>
-                        <Text>: {record.sum}</Text>
-                        </Flex>
-                      </Badge>
-                    ))
-                  }
-                </Flex>
-              </Card>
-              <Card className="grow">
-                <Text>
-                  Month Spending Total: 
-                </Text>
-                <Text mx='2'>{spendingTotals.month}</Text>
-                <Flex gap="2" mt='2' direction="column">
-                  {
-                    (dashboardStats?.data?.month || []).map((record: TransactionDashboard) => (
-                      <Badge key={`month-${record.name}`}>
-                        <Flex gap='2'>
-                        <Text>{record.name}</Text>
-                        <Text>: {record.sum}</Text>
-                        </Flex>
-                      </Badge>
-                    ))
-                  }
-                </Flex>
-              </Card>
-              <Card className="grow">
-                <Text>
-                  Year Spending Total: 
-                </Text>
-                <Text mx='2'>{spendingTotals.year}</Text>
-                <Flex gap="2" mt='2' direction="column">
-                  {
-                    (dashboardStats?.data?.year || []).map((record: TransactionDashboard) => (
-                      <Badge key={`year-${record.name}`}>
-                        <Flex gap='2'>
-                        <Text>{record.name}</Text>
-                        <Text>: {record.sum}</Text>
-                        </Flex>
-                      </Badge>
-                    ))
-                  }
-                </Flex>
-              </Card>
-              <Card className="grow">
-                <Text>
-                  Methods Balances: 
-                </Text>
-                <Flex gap="2" mt='2' direction="column">
-                  {
-                    (balanceData?.data || []).map((record: TransactionDashboard) => (
-                      <Badge key={`year-${record.name}`}>
-                        <Flex gap='2'>
-                        <Text>{record.name}</Text>
-                        <Text>: {record.sum}</Text>
-                        </Flex>
-                      </Badge>
-                    ))
-                  }
-                </Flex>
-              </Card>
-            </Grid>
-          </Card>
-          <Card className="w-full min-h-[10rem] mt-4">
-            <Text>Recent Transactions </Text>
-            <Flex direction='column' gap='2'>
-              {
-                recentTransaction?.data.map((record) => (
-                  <Card id={record.id}>
-                    <TransactionDisplayComponent record={record}/>
-                  </Card>
-                ))
-              }
-            </Flex>
-          </Card>
-          <Flex className="grow" justify="center" gap='2' mt='2'>
-              <Button className="grow" variant='outline' onClick={() => navigate("/groups")}>
-                <Text>Manage Groups</Text>
-              </Button>
-              <Button className='grow' variant='outline'onClick={() => navigate("/methods")}>
-                <Text>Manage Methods</Text>
-              </Button>
-          </Flex>
-            <Flex justify="center" mt='2'>
-              <Button className="w-full grow" variant='outline' onClick={() => navigate("/transactions")}>
-                <Text>Manage Transactions</Text>
-              </Button>
+    <div className="app-page">
+      <div className="app-shell">
+        <div className="app-frame">
+          <header className="app-topbar">
+            <div className="app-topbar__row">
+              <div>
+                <h1 className="app-title">Dashboard</h1>
+                <p className="app-subtitle">A sharper view of spending, balances, and recent activity.</p>
+              </div>
+              <div className="app-topbar__profile">
+                <button
+                  type="button"
+                  className="app-icon-button"
+                  onClick={() => setProfileOpen((prev) => !prev)}
+                  aria-expanded={profileOpen}
+                  aria-label="Open profile menu"
+                >
+                  <User size={20} />
+                </button>
 
-            </Flex>
-      </Box>
+                {profileOpen && (
+                  <div className="app-menu">
+                    <p className="app-menu__text">Username: <span className="app-menu__value">{user?.fname}</span></p>
+                    <p className="app-menu__text">Email: <span className="app-menu__value">{user?.email}</span></p>
+                    <button
+                      type="button"
+                      className="app-action"
+                      onClick={() => { setProfileOpen(false); logout(); navigate('/info', {replace: true}) }}
+                    >
+                      <LogOut size={16} />
+                      Sign out
+                    </button>
+                  </div>
+                )}
+              </div>
+            </div>
+          </header>
 
-    </Flex>
+          <main className="app-content">
+            <p className="app-intro">Welcome to your dashboard!</p>
+
+            <section className="app-section">
+              <div className="app-section__header" style={{marginBottom: 12}}>
+                <h2 className="app-section__title">Spending Analysis</h2>
+                <span className="app-section__tag">Live Overview</span>
+              </div>
+              <div className="app-grid-4">
+                {statCards.map((card) => (
+                  <div key={card.key} className={`app-stat-card ${card.cardClass}`}>
+                    <p className="app-stat-card__title">{card.title}</p>
+                    {'total' in card && typeof card.total === 'number' && (
+                      <p className="app-stat-card__total"> $ {card.total}</p>
+                    )}
+                    <div className="app-pill-row">
+                      {card.items.map((record: TransactionDashboard) => (
+                        <span key={`${card.key}-${record.name}`} className={`app-pill ${card.pillClass}`}>
+                          <span>{record.name}</span>
+                          <span>: $ {record.sum}</span>
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </section>
+
+            <section className="app-section">
+              <div className="app-section__header">
+                <h2 className="app-section__title">Recent Transactions</h2>
+              </div>
+              <div className="app-list">
+                {recentTransaction?.data.map((record) => (
+                  <div key={record.id} id={record.id} className="app-list-card">
+                    <TransactionDisplayComponent record={record} />
+                  </div>
+                ))}
+              </div>
+            </section>
+
+            <div className="app-controls" style={{ marginTop: '1.5rem' }}>
+              <button type="button" className="app-button app-button--subtle grow" onClick={() => navigate('/groups')}>
+                Manage Groups
+              </button>
+              <button type="button" className="app-button app-button--subtle grow" onClick={() => navigate('/methods')}>
+                Manage Methods
+              </button>
+            </div>
+
+            <div style={{ marginTop: '0.75rem' }}>
+              <button type="button" className="app-button app-button--primary" style={{ width: '100%' }} onClick={() => navigate('/transactions')}>
+                Manage Transactions
+              </button>
+            </div>
+          </main>
+        </div>
+      </div>
+    </div>
   )
 }

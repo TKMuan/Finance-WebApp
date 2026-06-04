@@ -1,11 +1,10 @@
-import { Flex, Box, Text, TextField, Button, Card } from '@radix-ui/themes'
+import { Flex, Text, Button } from '@radix-ui/themes'
 import { useAuth } from '../hooks'
 import { useState } from 'react'
 import { useGetMethods, useUpdateMethod, useDeleteMethod} from '../hooks/method.hooks'
 import { X, Pencil, Trash2, CirclePlus, Check} from 'lucide-react'
 import type { UserMethods } from '../types'
 import { useNavigate } from 'react-router-dom'
-import "./methods.page.css"
 import { LoadingComponent } from '../components'
 
 interface methodDisplayProp {
@@ -41,38 +40,38 @@ const MethodDisplayComponent = ({record}: methodDisplayProp) => {
         return <Text>Deleting...</Text>
     }
     return (
-        <Flex direction="column">
-            <Flex direction="row" justify="between" align="center" className="justify-between">
-                <Text>
+        <div className="app-record-card app-record-card--method">
+            <div className="app-record-card__content">
+            <div className="app-record-card__row">
+                <Text className="app-record-card__title">
                     {record.name}
                 </Text>
-                <Flex direction="row" gap='2'>
+                <div className="app-record-actions">
                     {
                         editEnabled ? 
-                        <Check onClick={() => handleConfirm()}/> :
+                        <Check className="app-record-icon" onClick={() => handleConfirm()}/> :
 
                         confirmDelete ? 
-                        <Flex align="center">
-                            <X onClick={() => setConfirmDelete(false)}/>
-                            <Button className="method_delete_button" onClick={() => handleDelete()}>Delete</Button>
-                        </Flex> : 
+                        <div className="app-record-actions">
+                            <X className="app-record-icon" onClick={() => setConfirmDelete(false)}/>
+                            <Button className="app-button app-record-delete" onClick={() => handleDelete()}>Delete</Button>
+                        </div> : 
 
-                        <Flex>
-                        <Pencil onClick={() => setEditEnabled(true)}/>
-                        <Trash2 onClick={() => setConfirmDelete(true)}/>                                
-                        </Flex>
+                        <div className="app-record-actions">
+                        <Pencil className="app-record-icon" onClick={() => setEditEnabled(true)}/>
+                        <Trash2 className="app-record-icon" onClick={() => setConfirmDelete(true)}/>                                
+                        </div>
                         
                     }
-                </Flex>
-            </Flex>
+                </div>
+            </div>
             { editEnabled && 
                 <Flex>
-                    <TextField.Root className="w-full mt-4" value={newName} onChange={(e) => {setNewName(e.target.value)}}>
-
-                    </TextField.Root>
+                    <input className="app-input app-input--record app-record-input" value={newName} onChange={(e) => {setNewName(e.target.value)}} />
                 </Flex>
             }
-        </Flex>
+            </div>
+        </div>
     )
 
 }
@@ -89,36 +88,44 @@ export const MethodsPage = () => {
     }
 
     return (
-        <Box className="w-full p-5">
-            <Text className="pt-3">Welcome to your methods page!</Text>
-            <Card className="w-full min-h-[10rem] mt-4 mb-4">
-                <Card className="w-full min-h-[10rem] mt-4 mb-4">
-                    <Flex className="w-full flex-grow mb-4" align={"center"} justify="between">
-                        <Text className="pl-2">User Method List</Text>
-                        <CirclePlus className="mr-4"
-                        onClick={() => navigate("/methods/create")}/>
-                    </Flex>
-                    { isPending ? <Box>Loading</Box>: 
-                        <Flex direction="column" maxHeight="100vh" className="mt-2" wrap="wrap" gap="2">
-                        {
-                            userMethods?.data.map((record, index) => (
-                                <Card key={index}>
-                                    <MethodDisplayComponent record={record}/>
-                                </Card>
-                            ) 
-                            )                         
-                        }
-                        </Flex>
-                    }
-                </Card>
-                <Flex justify="center">
-                    <Button
-                    onClick={() => navigate("/dashboard")}>
-                        Home
-                    </Button>
-
-                </Flex>
-            </Card>
-        </Box>
+        <div className="app-page">
+            <div className="app-shell">
+                <div className="app-frame">
+                    <div className="app-topbar">
+                        <div className="app-topbar__row">
+                            <div>
+                                <h1 className="app-title">Methods</h1>
+                                <p className="app-subtitle">Manage the payment methods attached to your transactions.</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div className="app-content">
+                        <p className="app-intro">Welcome to your methods page!</p>
+                        <section className="app-section">
+                            <div className="app-section__header">
+                                <h2 className="app-section__title">User Method List</h2>
+                                <button type="button" className="app-icon-button" onClick={() => navigate("/methods/create")}> <CirclePlus /> </button>
+                            </div>
+                            {isPending ? (
+                                <p className="app-form-helper">Loading</p>
+                            ) : (
+                                <div className="app-list-panel">
+                                <div className="app-list">
+                                    {userMethods?.data.map((record, index) => (
+                                        <div key={index} className="app-list-card">
+                                            <MethodDisplayComponent record={record}/>
+                                        </div>
+                                    ))}
+                                </div>
+                                </div>
+                            )}
+                            <div className="app-controls" style={{ justifyContent: 'center', marginTop: '1.25rem' }}>
+                                <Button className="app-button app-button--subtle" onClick={() => navigate("/dashboard")}>Home</Button>
+                            </div>
+                        </section>
+                    </div>
+                </div>
+            </div>
+        </div>
     )
 }

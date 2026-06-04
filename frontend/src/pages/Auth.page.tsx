@@ -1,4 +1,4 @@
-import { Link, Box, Flex, Text, TextField, Button, Card } from '@radix-ui/themes'
+import { Link, Flex, Text, Button, Card } from '@radix-ui/themes'
 import { useState } from 'react'
 import type { CreateUserInput, LoginCredentials } from '../types'
 import { useAuth } from '../hooks'
@@ -84,70 +84,70 @@ export const AuthPage = () => {
 
     if (loading){
         return (
-            <Box className="min-w-screen min-h-screen flex items-center justify-center">
-                <Text size="6" weight="bold">Loading...</Text>
-            </Box>
+            <div className="app-auth-shell">
+                <p className="app-title">Loading...</p>
+            </div>
         )
     }
 
     return (
-        <Box className="min-w-screen min-h-screen flex items-center justify-center">
-            <Card className="mx-4 my-8">
-                <Flex direction="column" gap="4" p="5">
+        <div className="app-page app-auth-shell">
+            <Card className="app-auth-card">
+                <Flex direction="column" gap="4" p="5" className="app-form-stack">
                     {
                         mode ? (
-                            <Flex direction="column" gap="4">
-                                <Text size="6" weight="bold">Login</Text>
-                                <Text>Email</Text>
-                                <TextField.Root placeholder="Enter your email" required={true} value={loginCredentials.email} onChange={(e) => setLoginCredentials({...loginCredentials, email: e.target.value})} />
-                                {LoginError?.email && <Text className="text-red-500">{LoginError.email}</Text>}
-                                <Text>Password</Text>
-                                <TextField.Root placeholder="Enter your password" required={true} type="password" value={loginCredentials.password} onChange={(e) => setLoginCredentials({...loginCredentials, password: e.target.value})} />
-                                {LoginError?.password && <Text className="text-red-500">{LoginError.password}</Text>}
-                                {error && <Text className="text-red-500">{error}</Text>}
-                                <Flex gap="2" justify="between" align="center">
-                                    <Button variant='outline' color='green' onClick={() => { void onSubmitLogin(loginCredentials) }}>Login</Button>
-                                    <Link onClick={() => setmode(false)}>Create Account?</Link>
+                            <Flex direction="column" gap="4" className="app-form-stack">
+                                <Text size="6" weight="bold" className="app-title">Login</Text>
+                                <Text className="app-form-label">Email</Text>
+                                <input className="app-input app-input--form" placeholder="Enter your email" required value={loginCredentials.email} onChange={(e) => setLoginCredentials({...loginCredentials, email: e.target.value})} />
+                                {LoginError?.email && <Text className="app-form-error">{LoginError.email}</Text>}
+                                <Text className="app-form-label">Password</Text>
+                                <input className="app-input app-input--form" placeholder="Enter your password" required type="password" value={loginCredentials.password} onChange={(e) => setLoginCredentials({...loginCredentials, password: e.target.value})} />
+                                {LoginError?.password && <Text className="app-form-error">{LoginError.password}</Text>}
+                                {error && <Text className="app-form-error">{error}</Text>}
+                                <Flex gap="2" justify="between" align="center" className="app-split-actions">
+                                    <Button className="app-button app-button--primary" onClick={() => { void onSubmitLogin(loginCredentials) }}>Login</Button>
+                                    <Link className="app-link-button" onClick={() => setmode(false)}>Create Account?</Link>
                                 </Flex>
                             </Flex>
                         ) : (
-                            <Flex direction="column" gap="4">
-                                <Text size="6" weight="bold">Register</Text>
-                                <Text>First Name</Text>
-                                <TextField.Root 
+                            <Flex direction="column" gap="4" className="app-form-stack">
+                                <Text size="6" weight="bold" className="app-title">Register</Text>
+                                <Text className="app-form-label">First Name</Text>
+                                <input className="app-input app-input--form"
                                     placeholder="Enter your first name" 
                                     value={newCredentials?.fname} 
                                     required={true} 
                                     onChange={(e) => setNewCredentials({...newCredentials, fname: e.target.value})} 
                                 />
-                                {RegError?.fname && <Text className="text-red-500">{RegError.fname}</Text>}
-                                <Text>Last Name</Text>
-                                <TextField.Root 
+                                {RegError?.fname && <Text className="app-form-error">{RegError.fname}</Text>}
+                                <Text className="app-form-label">Last Name</Text>
+                                <input className="app-input app-input--form"
                                     placeholder="Enter your last name" 
                                     value={newCredentials?.lname} 
                                     onChange={(e) => setNewCredentials({...newCredentials, lname: e.target.value})} 
                                 />
-                                <Text>Email</Text>
-                                <TextField.Root 
+                                <Text className="app-form-label">Email</Text>
+                                <input className="app-input app-input--form"
                                     placeholder="Enter your email" 
                                     value={newCredentials?.email} 
                                     required={true}
                                     type='email'
                                     onChange={(e) => setNewCredentials({...newCredentials, email: e.target.value})} 
                                 />
-                                {RegError?.email && <Text className="text-red-500">{RegError.email}</Text>}
-                                <Text>Password</Text>
-                                <TextField.Root 
+                                {RegError?.email && <Text className="app-form-error">{RegError.email}</Text>}
+                                <Text className="app-form-label">Password</Text>
+                                <input className="app-input app-input--form"
                                     placeholder="Enter your password" 
                                     type="password" 
                                     required={true}
                                     value={newCredentials?.password} 
                                     onChange={(e) => setNewCredentials({...newCredentials, password: e.target.value})} 
                                 />
-                                {RegError?.password && <Text className="text-red-500">{RegError.password}</Text>}
-                                <Flex gap="2" justify="between" align='center'>
-                                    <Button variant="outline" color='green' onClick={() => { void onSubmitRegister(newCredentials) }}>Register</Button>
-                                    <Link onClick={() => setmode(true)}>Already Registered?</Link>
+                                {RegError?.password && <Text className="app-form-error">{RegError.password}</Text>}
+                                <Flex gap="2" justify="between" align='center' className="app-split-actions">
+                                    <Button className="app-button app-button--primary" onClick={() => { void onSubmitRegister(newCredentials) }}>Register</Button>
+                                    <Link className="app-link-button" onClick={() => setmode(true)}>Already Registered?</Link>
                                 </Flex>
                             </Flex>
 
@@ -156,6 +156,6 @@ export const AuthPage = () => {
 
                 </Flex>
             </Card>
-        </Box>
+        </div>
     )
 }

@@ -1,9 +1,8 @@
-import { Grid, CheckboxGroup, Flex, RadioGroup, DropdownMenu, Box, Text, TextField, Button, Card, Badge, Dialog } from '@radix-ui/themes'
 import { useAuth, useUpdateTransaction } from '../hooks'
-import { useEffect, useState} from 'react'
+import { useEffect, useRef, useState} from 'react'
 import type { Dispatch, SetStateAction} from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
-import { SearchIcon, Trash2, X, FilterIcon, ArrowLeft, ArrowRight, ArrowDown, Pencil } from 'lucide-react'
+import { SearchIcon, Trash2, X, FilterIcon, ArrowLeft, ArrowRight, Pencil } from 'lucide-react'
 import { useGetTransactions, useDeleteTransaction, useGetGroups, useGetMethods} from '../hooks'
 import type { UserMethods, UserGroupings, Transaction, TransactionFilter, UpdateTransactionInput } from '../types'
 import { DateSelection, LoadingComponent } from '../components'
@@ -146,117 +145,109 @@ const FiltersSelection = ({updateFilter, userMethods, userGroups}: FilterProps) 
     }, [searchParams, userMethods, userGroups, updateFilter])
 
     return (
-        <Flex my="2" className='w-full'>
-            <Card className='w-full'>
-                <Flex gap="2" direction={'column'}>
-                    <Flex gap="2" direction="column" >
-                        <Flex gap="4" justify="start">
-                            <Text>From Date:</Text>
-                            <DateSelection value={fromDate} onChange={setFromDate}/>
-                        </Flex>
-                        <Flex gap="4" justify="start">
-                            <Text>To Date:</Text>
-                            <DateSelection value={toDate} onChange={setToDate}/>
-                        </Flex>
-                    </Flex>
-                    <Flex direction={"column"} gap="2">
-                        <Flex gap="2" align="center">
-                            <Text>From Amount:</Text>
-                            <TextField.Root type="number" value={fromAmount} onChange={((e) => {
-                                const parsed = parseInt(e.target.value)
-                                setFromAmount(Number.isNaN(parsed) ? undefined : parsed)
-                            })}/>
-                            <Text>To Amount:</Text>
-                            <TextField.Root type="number" value={toAmount} onChange={(e) => {
-                                const parsed = parseInt(e.target.value)
-                                setToAmount(Number.isNaN(parsed) ? undefined : parsed)
-                            }}/>
-                        </Flex>
-                    </Flex>
-                    <Flex gap="4" align="start" justify="start" direction="column">
-                        <Flex gap="4" align="center">
-                            <Text>Method:</Text>
-                            <DropdownMenu.Root>
-                                <DropdownMenu.Trigger>
-                                    <Button variant="ghost">
-                                        {
-                                            method !== null ? (method.name) : "Any" 
-                                        }
-                                    </Button>
-                                </DropdownMenu.Trigger>
-                                <DropdownMenu.Content>
-                                    {
-                                        userMethods.map((record, index) => (
-                                            <DropdownMenu.Item id={`${index}`} onClick={() => setMethod(record)}>
-                                                {record.name}
-                                            </DropdownMenu.Item>
-                                        ))
-                                    }
-                                    <DropdownMenu.Item onClick={() => setMethod(null)}>
-                                        Any
-                                    </DropdownMenu.Item>
-                                </DropdownMenu.Content>
-                            </DropdownMenu.Root>
-                        </Flex>
-                        <Flex gap="4" align="center">
-                            <Text>Group:</Text>
-                            <DropdownMenu.Root>
-                                <DropdownMenu.Trigger>
-                                    <Button variant="ghost">
-                                        {
-                                            group !== null ? (group.name) : "Any" 
-                                        }
-                                    </Button>
-                                </DropdownMenu.Trigger>
-                                <DropdownMenu.Content>
-                                    {
-                                        userGroups.map((record, index) => (
-                                            <DropdownMenu.Item id={`${index}`} onClick={() => setGroup(record)}>
-                                                {record.name}
-                                            </DropdownMenu.Item>
-                                        ))
-                                    }
-                                    <DropdownMenu.Item onClick={() => setGroup(null)}>
-                                        Any
-                                    </DropdownMenu.Item>
-                                </DropdownMenu.Content>
-                            </DropdownMenu.Root>
-                        </Flex>
-                    </Flex>
-                    <Flex align="center" className='w-full' gap="4">
-                        <Text>Type:</Text>
-                        <DropdownMenu.Root>
-                            <DropdownMenu.Trigger>
-                                <Button variant="ghost">
-                                    {
-                                        (type !== null) ? (type ? "Debit" : "Credit") : "Any"
-                                    }
-                                </Button>
-                            </DropdownMenu.Trigger>
-                            <DropdownMenu.Content>
-                                <DropdownMenu.Item onClick={() => setType(false)}>
-                                    Credit
-                                </DropdownMenu.Item>
-                                <DropdownMenu.Item onClick={() => setType(true)}>
-                                    Debit
-                                </DropdownMenu.Item>
-                                <DropdownMenu.Item onClick={() => setType(null)}>
-                                    Any
-                                </DropdownMenu.Item>
-                            </DropdownMenu.Content>
-                        </DropdownMenu.Root>
-                    </Flex>
-                </Flex>
-                <Flex justify={"center"} gap="2">
-                    <Button variant="outline" radius="full" onClick={() => setSearchParams({})}>
-                        Clear
-                    </Button>
-                    <Button variant="outline" radius="full" onClick={updateFilterVals}>
-                        Search
-                    </Button>
-                </Flex>
-            </Card>
-        </Flex>
+        <div className="app-filter-panel app-filter-grid">
+            <div className="app-filter-grid app-filter-grid--two">
+                <div className="app-filter-field">
+                    <span className="app-filter-label">From Date</span>
+                    <DateSelection value={fromDate} onChange={setFromDate}/>
+                </div>
+                <div className="app-filter-field">
+                    <span className="app-filter-label">To Date</span>
+                    <DateSelection value={toDate} onChange={setToDate}/>
+                </div>
+            </div>
+
+            <div className="app-filter-grid app-filter-grid--two">
+                <div className="app-filter-field">
+                    <span className="app-filter-label">From Amount</span>
+                    <input
+                        className="app-input app-input--full"
+                        type="number"
+                        value={fromAmount ?? ''}
+                        onChange={(e) => {
+                            const parsed = parseInt(e.target.value)
+                            setFromAmount(Number.isNaN(parsed) ? undefined : parsed)
+                        }}
+                    />
+                </div>
+                <div className="app-filter-field">
+                    <span className="app-filter-label">To Amount</span>
+                    <input
+                        className="app-input app-input--full"
+                        type="number"
+                        value={toAmount ?? ''}
+                        onChange={(e) => {
+                            const parsed = parseInt(e.target.value)
+                            setToAmount(Number.isNaN(parsed) ? undefined : parsed)
+                        }}
+                    />
+                </div>
+            </div>
+
+            <div className="app-filter-grid app-filter-grid--two">
+                <div className="app-filter-field">
+                    <span className="app-filter-label">Method</span>
+                    <select
+                        className="app-select app-input--full"
+                        value={method?.id ?? ''}
+                        onChange={(e) => {
+                            const selectedMethod = userMethods.find((record) => record.id === e.target.value) ?? null
+                            setMethod(selectedMethod)
+                        }}
+                    >
+                        <option value="">Any</option>
+                        {userMethods.map((record) => (
+                            <option key={record.id} value={record.id}>
+                                {record.name}
+                            </option>
+                        ))}
+                    </select>
+                </div>
+                <div className="app-filter-field">
+                    <span className="app-filter-label">Group</span>
+                    <select
+                        className="app-select app-input--full"
+                        value={group?.id ?? ''}
+                        onChange={(e) => {
+                            const selectedGroup = userGroups.find((record) => record.id === e.target.value) ?? null
+                            setGroup(selectedGroup)
+                        }}
+                    >
+                        <option value="">Any</option>
+                        {userGroups.map((record) => (
+                            <option key={record.id} value={record.id}>
+                                {record.name}
+                            </option>
+                        ))}
+                    </select>
+                </div>
+            </div>
+
+            <div className="app-filter-field">
+                <span className="app-filter-label">Type</span>
+                <select
+                    className="app-select app-input--full"
+                    value={type === null ? '' : String(type)}
+                    onChange={(e) => {
+                        const nextType = e.target.value === '' ? null : e.target.value === 'true'
+                        setType(nextType)
+                    }}
+                >
+                    <option value="">Any</option>
+                    <option value="false">Credit</option>
+                    <option value="true">Debit</option>
+                </select>
+            </div>
+
+            <div className="app-filter-actions">
+                <button type="button" className="app-button app-button--subtle" onClick={() => setSearchParams({})}>
+                    Clear
+                </button>
+                <button type="button" className="app-button app-button--primary" onClick={updateFilterVals}>
+                    Search
+                </button>
+            </div>
+        </div>
     )
 }
 interface TransactionDisplayProp {
@@ -268,10 +259,12 @@ interface TransactionDisplayProp {
 const TransactionDisplayComponent = ({record, userMethods, userGroups}: TransactionDisplayProp) => {
 
     const [confirmDelete, setConfirmDelete] = useState<boolean>(false)
+    const [isEditOpen, setIsEditOpen] = useState<boolean>(false)
     const {isPending: pendingDelete, mutate: deleteMethod} = useDeleteTransaction()
     const {isPending: pendingUpdate, mutate: updateTransaction} = useUpdateTransaction()
     const [groups, setGroups] = useState(record.groups.map(rec => rec.id))
     const [date, setDate] = useState(new Date(record.transaction_time))
+    const editDialogRef = useRef<HTMLDialogElement | null>(null)
     const [updateData, setUpdateData] = useState<UpdateTransactionInput>(
         {
             id: record.id,
@@ -297,158 +290,219 @@ const TransactionDisplayComponent = ({record, userMethods, userGroups}: Transact
         deleteMethod({"id": record.id})
         setConfirmDelete(false)
     }
+    useEffect(() => {
+        const dialog = editDialogRef.current
+
+        if (!dialog) {
+            return
+        }
+
+        if (isEditOpen && !dialog.open) {
+            dialog.showModal()
+        }
+
+        if (!isEditOpen && dialog.open) {
+            dialog.close()
+        }
+    }, [isEditOpen])
+
     if (pendingDelete){
-        return <Text>Deleting...</Text>
+        return <span>Deleting...</span>
     }
     if (pendingUpdate){
-        return <Text>Updating...</Text>
+        return <span>Updating...</span>
     }
+    const isDebit = record.type
+
     return (
-        <Flex direction="column">
-            <Flex direction="row" justify="between" align="center" className="justify-between">
-                <Flex className="h-fit" gap='2' maxWidth={{"sm": "50", "md":"100"}} direction="column">
-                    <Text truncate className='max-w-50 md:max-w-150' >
-                        {record.description}
-                    </Text>
-                    <Flex gap='2' className="flex-wrap">
-                        <Badge color={record.type ? "red" : "green"}>
-                            <Text truncate>
-                                {record.amount}
-                            </Text>
-                        </Badge>
-                        <Badge>
-                            <Text truncate>
-                                {record.methodName}
-                            </Text>
-                        </Badge>
-                        <Badge>
-                            <Text truncate>
-                                {record.transaction_time.getDate()}-{record.transaction_time.getMonth() + 1}-{record.transaction_time.getFullYear()}
-                            </Text>
-                        </Badge>
-                    </Flex>
-                    <Flex gap='2' className="flex-wrap">
-                        {
-                            record.groups?.map((groupRecord) => (
-                                <Badge key={groupRecord.id} id={groupRecord.id}>
-                                    {groupRecord.name}
-                                </Badge>
-                            ))
-                        }
-                    </Flex>
-                </Flex>
-                <Flex direction="row" gap='2'>
-                    <Dialog.Root>
-                        <Dialog.Trigger>
-                            <Button variant="ghost">
-                                <Pencil color='black'/> 
-                            </Button>
-                        </Dialog.Trigger>
+        <div className={`transaction-card ${isDebit ? 'transaction-card--debit' : 'transaction-card--credit'}`}>
+            <div className="transaction-card__body">
+                <p className="transaction-title">{record.description}</p>
+                <div className="transaction-meta-row">
+                    <span className={`transaction-pill ${isDebit ? 'transaction-amount--debit' : 'transaction-amount--credit'}`}>
+                        {record.amount}
+                    </span>
+                    <span className={`transaction-pill ${isDebit ? 'transaction-pill--debit' : 'transaction-pill--credit'}`}>
+                        {record.methodName}
+                    </span>
+                    <span className={`transaction-pill ${isDebit ? 'transaction-pill--debit' : 'transaction-pill--credit'}`}>
+                        {record.transaction_time.getDate()}-{record.transaction_time.getMonth() + 1}-{record.transaction_time.getFullYear()}
+                    </span>
+                </div>
+                <div className="transaction-group-row">
+                    {
+                        record.groups?.map((groupRecord) => (
+                            <span key={groupRecord.id} id={groupRecord.id} className={`transaction-pill ${isDebit ? 'transaction-pill--debit' : 'transaction-pill--credit'}`}>
+                                {groupRecord.name}
+                            </span>
+                        ))
+                    }
+                </div>
+            </div>
+            <div className="transaction-card__actions">
+                    <button
+                        type="button"
+                        className="app-icon-button transaction-card__icon-button"
+                        onClick={() => setIsEditOpen(true)}
+                        aria-label="Edit transaction"
+                    >
+                        <Pencil size={18} />
+                    </button>
 
-                        <Dialog.Content className="w-fit" maxWidth="100%">
-                            <Dialog.Title>Edit Transaction</Dialog.Title>
-                            <Dialog.Description size="2" mb="4">
-                                Make changes to your transaction.
-                            </Dialog.Description>
+                    {isEditOpen && (
+                        <dialog
+                            ref={editDialogRef}
+                            className="transaction-dialog"
+                            onClose={() => setIsEditOpen(false)}
+                            onCancel={(event) => {
+                                event.preventDefault()
+                                setIsEditOpen(false)
+                            }}
+                        >
+                            <form className="transaction-dialog__content" method="dialog">
+                                <div>
+                                    <h3 className="transaction-dialog__title">Edit Transaction</h3>
+                                    <p className="transaction-dialog__description">Make changes to your transaction.</p>
+                                </div>
 
-                            <Flex direction="column" gap="3">
-                                <label>
-                                    <Text as="div" size="2" mb="1" weight="bold">
-                                        Amount
-                                    </Text>
-                                    <TextField.Root
-                                        value={updateData.amount}
-                                        type='number'
-                                        placeholder="Enter Amount"
-                                        onChange={(e) => setUpdateData((prev) => ({...prev, amount: parseInt(e.target.value)}))}
-                                    />
-                                </label>
-                                <label>
-                                    <Text as="div" size="2" mb="1" weight="bold">
-                                        Description
-                                    </Text>
-                                    <TextField.Root
-                                        value={updateData.description}
-                                        placeholder="Enter description"
-                                        onChange={(e) => setUpdateData((prev) => ({...prev, description: e.target.value.trim()}))}
-                                    />
-                                </label>
-                                <label>
-                                    <Text as="div" size="2" mb="1" weight="bold">
-                                        Type
-                                    </Text>
-                                    <RadioGroup.Root defaultValue={record.type ? 'true' : 'false'} name="example">
-                                        <RadioGroup.Item value="true" onClick={() => setUpdateData((prev) => ({...prev, type: true}))} >Debit</RadioGroup.Item>
-                                        <RadioGroup.Item value="false" onClick={() => setUpdateData((prev) => ({...prev, type: false}))} >Credit</RadioGroup.Item>
-                                    </RadioGroup.Root>
-                                </label>
-                                <label>
-                                    <Text as="div" size="2" mb="1" weight="bold">
-                                        Method
-                                    </Text>
-                                    <RadioGroup.Root defaultValue={record.method} name="example">
-                                        <Grid gap='2' columns={{initial: '2', md:'3', lg:'4'}}>
-                                        {
-                                            userMethods.map((method) => (
-                                                <RadioGroup.Item value={method.id} onClick={() => setUpdateData((prev) => ({...prev, method: method.id}))} >{method.name}</RadioGroup.Item>
+                                <div className="transaction-dialog__form">
+                                    <label className="transaction-dialog__field">
+                                        <span className="transaction-dialog__label">Amount</span>
+                                        <input
+                                            className="app-input app-input--full"
+                                            value={updateData.amount}
+                                            type="number"
+                                            placeholder="Enter Amount"
+                                            onChange={(e) => setUpdateData((prev) => ({...prev, amount: Number.parseInt(e.target.value, 10)}))}
+                                        />
+                                    </label>
 
-                                            ))
-                                        }
-                                        </Grid>
-                                    </RadioGroup.Root>
-                                </label>
-                                <label>
-                                    <Text as="div" size="2" mb="1" weight="bold">
-                                        Groups
-                                    </Text>
-                                    <CheckboxGroup.Root defaultValue={record.groups.map((rec) => rec.id)} name="example" value={groups} onValueChange={setGroups}>
-                                        <Grid gap='2' columns={{initial: '2', md:'3', lg:'4'}}>
-                                            {
-                                                userGroups.map((group) => (
-                                                    <CheckboxGroup.Item value={group.id}>{group.name}</CheckboxGroup.Item>
+                                    <label className="transaction-dialog__field">
+                                        <span className="transaction-dialog__label">Description</span>
+                                        <input
+                                            className="app-input app-input--full"
+                                            value={updateData.description}
+                                            placeholder="Enter description"
+                                            onChange={(e) => setUpdateData((prev) => ({...prev, description: e.target.value}))}
+                                        />
+                                    </label>
 
-                                                ))
-                                            }
-                                        </Grid>
-                                    </CheckboxGroup.Root>
+                                    <fieldset className="transaction-dialog__field">
+                                        <legend className="transaction-dialog__label">Type</legend>
+                                        <div className="transaction-dialog__option-grid transaction-dialog__option-grid--compact">
+                                            <label className="transaction-dialog__choice">
+                                                <input
+                                                    type="radio"
+                                                    name={`transaction-type-${record.id}`}
+                                                    checked={updateData.type === true}
+                                                    onChange={() => setUpdateData((prev) => ({...prev, type: true}))}
+                                                />
+                                                <span>Debit</span>
+                                            </label>
+                                            <label className="transaction-dialog__choice">
+                                                <input
+                                                    type="radio"
+                                                    name={`transaction-type-${record.id}`}
+                                                    checked={updateData.type === false}
+                                                    onChange={() => setUpdateData((prev) => ({...prev, type: false}))}
+                                                />
+                                                <span>Credit</span>
+                                            </label>
+                                        </div>
+                                    </fieldset>
 
-                                </label>
-                                <label>
-                                    <Text as="div" size="2" mb="1" weight="bold">
-                                        Transaction Time
-                                    </Text>
-                                    <DateSelection value={date} onChange={setDate}/>
-                                </label>
-                            </Flex>
+                                    <fieldset className="transaction-dialog__field">
+                                        <legend className="transaction-dialog__label">Method</legend>
+                                        <div className="transaction-dialog__option-grid">
+                                            {userMethods.map((method) => (
+                                                <label key={method.id} className="transaction-dialog__choice">
+                                                    <input
+                                                        type="radio"
+                                                        name={`transaction-method-${record.id}`}
+                                                        checked={updateData.method === method.id}
+                                                        onChange={() => setUpdateData((prev) => ({...prev, method: method.id}))}
+                                                    />
+                                                    <span>{method.name}</span>
+                                                </label>
+                                            ))}
+                                        </div>
+                                    </fieldset>
 
-                            <Flex gap="3" mt="4" justify="end">
-                                <Dialog.Close>
-                                    <Button variant="soft" color="gray">
+                                    <fieldset className="transaction-dialog__field">
+                                        <legend className="transaction-dialog__label">Groups</legend>
+                                        <div className="transaction-dialog__option-grid">
+                                            {userGroups.map((group) => (
+                                                <label key={group.id} className="transaction-dialog__choice">
+                                                    <input
+                                                        type="checkbox"
+                                                        checked={groups.includes(group.id)}
+                                                        onChange={() => setGroups((prev) => (
+                                                            prev.includes(group.id)
+                                                                ? prev.filter((groupId) => groupId !== group.id)
+                                                                : [...prev, group.id]
+                                                        ))}
+                                                    />
+                                                    <span>{group.name}</span>
+                                                </label>
+                                            ))}
+                                        </div>
+                                    </fieldset>
+
+                                    <label className="transaction-dialog__field">
+                                        <span className="transaction-dialog__label">Transaction Time</span>
+                                        <DateSelection value={date} onChange={setDate}/>
+                                    </label>
+                                </div>
+
+                                <div className="transaction-dialog__actions">
+                                    <button
+                                        type="button"
+                                        className="app-button app-button--subtle"
+                                        onClick={() => setIsEditOpen(false)}
+                                    >
                                         Cancel
-                                    </Button>
-                                </Dialog.Close>
-                                <Dialog.Close>
-                                    <Button onClick={() => handleUpdate()}>Save</Button>
-                                </Dialog.Close>
-                            </Flex>
-                        </Dialog.Content>
-                    </Dialog.Root>
+                                    </button>
+                                    <button
+                                        type="button"
+                                        className="app-button app-button--primary"
+                                        onClick={() => {
+                                            handleUpdate()
+                                            setIsEditOpen(false)
+                                        }}
+                                    >
+                                        Save
+                                    </button>
+                                </div>
+                            </form>
+                        </dialog>
+                    )}
 
                     {
                         confirmDelete ? 
-                        <Flex align="center">
-                            <X onClick={() => setConfirmDelete(false)}/>
-                            <Button className="method_delete_button" onClick={() => handleDelete()}>Delete</Button>
-                        </Flex> : 
+                        <div className="transaction-card__delete-confirm">
+                            <button
+                                type="button"
+                                className="transaction-card__icon-button"
+                                onClick={() => setConfirmDelete(false)}
+                                aria-label="Cancel delete"
+                            >
+                                <X size={18} />
+                            </button>
+                            <button type="button" className="app-action" onClick={() => handleDelete()}>Delete</button>
+                        </div> : 
 
-                        <Flex>
-                        <Trash2 onClick={() => setConfirmDelete(true)}/>                                
-                        </Flex>
+                        <button
+                            type="button"
+                            className="app-icon-button transaction-card__icon-button"
+                            onClick={() => setConfirmDelete(true)}
+                            aria-label="Delete transaction"
+                        >
+                            <Trash2 size={18} />
+                        </button>
                         
                     }
-                </Flex>
-            </Flex>
-        </Flex>
+            </div>
+        </div>
     )
 
 }
@@ -489,89 +543,118 @@ export const TransactionPage = () => {
         setSearchParams(nextParams)
     }
 
-    
     const {data: transactions, refetch: refetchTrans, isPending: loadingTransactions} = useGetTransactions(user?.id || "", 0, 25, transFilters)
-    const {data: userMethodsData, isPending: loadingMethods} = useGetMethods(user?.id || "",0,100)
+    const {data: userMethodsData, isPending: loadingMethods} = useGetMethods(user?.id || "", 0, 100)
     const {data: userGroupsData, isPending: loadingGroups} = useGetGroups(user?.id || "", 0, 100)
     const navigate = useNavigate()
 
     useEffect(() => {
-        console.log("filters updated refetching transactions")
-        console.log(transFilters)
         refetchTrans()
-    }, [transFilters])
-    useEffect(() => {
-        console.log("transactions: ",transactions)
-    }, [transactions])
+    }, [transFilters, refetchTrans])
 
-    if (loadingTransactions || loading || loadingMethods || loadingGroups){
-        return <LoadingComponent/>
+    if (loadingTransactions || loading || loadingMethods || loadingGroups) {
+        return <LoadingComponent />
     }
 
     return (
-        <Box className="w-full p-5">
-            <Text className="pt-3">Welcome to your transactions page!</Text>
-            <Card className="w-full min-h-[10] h-vh mt-4 mb-4">
-                <Text>
-                    Transaction List
-                </Text>
-                <Flex align="center" gap="2" my="2">
-                    <TextField.Root className="w-full" value={desc ?? ''} onChange={((e) => updateDesc(e.target.value))}>
-                    </TextField.Root>
-                    <SearchIcon onClick={() => setTransFilters((prev) => ({...prev, desc: desc || null}))}/>
-                    <FilterIcon onClick={() => setShowFilters((prev) => !prev)}/>
-                </Flex>
-                <Flex justify="end" direction="column">
-                <Flex justify={"end"} className='w-full'>
-                </Flex>
-                {
-                    showFilters && <FiltersSelection updateFilter={setTransFilters} userGroups={userGroupsData?.data || []} userMethods={userMethodsData?.data || []}/>
-                }
-                </Flex>
-                <Card className="h-full">
-                    <Flex direction="column" className="">
-                        <Flex className="min-h-100" direction="column" gap='2'>
-                            <Flex justify={'end'} px="1" gap='2'>
-                                <Button variant='outline' onClick={() => navigate('/transactions/create')}>Create Transaction</Button>
-                                <DropdownMenu.Root >
-                                    <DropdownMenu.Trigger>
-                                        <Button variant="outline">
-                                            {transFilters.limit}
-                                            <ArrowDown/>
-                                        </Button>
-                                    </DropdownMenu.Trigger>
-                                    <DropdownMenu.Content>
-                                        <Button variant="ghost" className="w-full" onClick={() => setTransFilters((prev) => ({...prev, limit: 10}))}>10</Button>
-                                        <Button variant="ghost" className="w-full" onClick={() => setTransFilters((prev) => ({...prev, limit: 25}))}>25</Button>
-                                        <Button variant="ghost" className="w-full" onClick={() => setTransFilters((prev) => ({...prev, limit: 50}))}>50</Button>
-                                        <Button variant="ghost" className="w-full" onClick={() => setTransFilters((prev) => ({...prev, limit: 100}))}>100</Button>
-                                    </DropdownMenu.Content>
-                                </DropdownMenu.Root>
-                            </Flex>
-                            {
-                                transactions ? transactions.data.map((record) => (
-                                    <Card key={record.id} id={record.id}>
-                                        <TransactionDisplayComponent record={record} userMethods={userMethodsData?.data || []} userGroups={userGroupsData?.data || []}/>
-                                    </Card>
-                                )):<></>
-                            }
-                        </Flex>
-                    </Flex>
-                    <Flex justify={'center'} gap="2" mt="4">
-                        <Button variant="outline" disabled={transFilters.page === 0} onClick={() => setTransFilters((prev) => ({...prev, page: prev.page - 1}))}>
-                            <ArrowLeft />
-                        </Button>
-                        <Text mx="4">{transFilters.page + 1}</Text>
-                        <Button variant="outline" disabled={transactions?.data.length !== transFilters.limit} onClick={() => setTransFilters((prev) => ({...prev, page: prev.page + 1}))}>
-                            <ArrowRight />
-                        </Button>
-                    </Flex>
+        <div className="app-page">
+            <div className="app-shell">
+                <div className="app-frame">
+                    <div className="app-topbar">
+                        <div className="app-topbar__row">
+                            <div>
+                                <h1 className="app-title">Transactions</h1>
+                                <p className="app-subtitle">Search, filter, update, and review every payment in one place.</p>
+                            </div>
+                        </div>
+                    </div>
 
-                </Card>
-                <Flex justify={"center"} align="center" mt='4'>
-                    <Button radius="full" variant="outline" onClick={() => navigate('/dashboard')}>Home</Button>
-                </Flex>
-            </Card>
-        </Box>
+                    <div className="app-content">
+                        <p className="app-intro">Welcome to your transactions page!</p>
+
+                        <section className="app-section">
+                            <div className="app-section__header">
+                                <h2 className="app-section__title">Transaction List</h2>
+                            </div>
+
+                            <div className="app-toolbar">
+                                <div className="app-toolbar__right app-input-row" style={{ justifyContent: 'flex-start' }}>
+                                    <input
+                                        className="app-input app-input--search max-h-12"
+                                        value={desc ?? ''}
+                                        onChange={(e) => updateDesc(e.target.value)}
+                                        placeholder="Search transactions"
+                                    />
+                                    <div>
+                                        <button type="button" className="app-icon-button" onClick={() => setTransFilters((prev) => ({...prev, desc: desc || null}))} aria-label="Search transactions">
+                                            <SearchIcon />
+                                        </button>
+                                        <button type="button" className="app-icon-button ml-2"  onClick={() => setShowFilters((prev) => !prev)} aria-label="Toggle filters">
+                                            <FilterIcon />
+                                        </button>
+
+                                    </div>
+                                <div className="app-toolbar__split-right max-w-24">
+                                    <select
+                                        className="app-select app-input--full"
+                                        value={transFilters.limit}
+                                        onChange={(e) => setTransFilters((prev) => ({ ...prev, limit: Number.parseInt(e.target.value, 10) }))}
+                                    >
+                                        <option value={10}>10</option>
+                                        <option value={25}>25</option>
+                                        <option value={50}>50</option>
+                                        <option value={100}>100</option>
+                                    </select>
+                                </div>
+                                </div>
+                            </div>
+
+                            {showFilters && (
+                                <div className="app-stack">
+                                    <FiltersSelection updateFilter={setTransFilters} userGroups={userGroupsData?.data || []} userMethods={userMethodsData?.data || []} />
+                                </div>
+                            )}
+
+                            <div className="app-toolbar app-toolbar--split">
+                                <div />
+                                <div className="app-toolbar__split-center">
+                                    <button type="button" className="app-button app-button--subtle w-full" onClick={() => navigate('/transactions/create')}>
+                                        Create Transaction
+                                    </button>
+                                </div>
+                            </div>
+
+                            <div className="app-list">
+                                {transactions ? transactions.data.map((record) => (
+                                    <div key={record.id} id={record.id} className="app-list-card">
+                                        <TransactionDisplayComponent
+                                            record={record}
+                                            userMethods={userMethodsData?.data || []}
+                                            userGroups={userGroupsData?.data || []}
+                                        />
+                                    </div>
+                                )) : null}
+                            </div>
+
+                            <div className="app-toolbar" style={{ justifyContent: 'center', marginTop: '1.5rem' }}>
+                                <button type="button" className="app-button app-button--subtle" disabled={transFilters.page === 0} onClick={() => setTransFilters((prev) => ({...prev, page: prev.page - 1}))}>
+                                    <ArrowLeft />
+                                </button>
+                                <span className="transaction-page__index">{transFilters.page + 1}</span>
+                                <button type="button" className="app-button app-button--subtle" disabled={transactions?.data.length !== transFilters.limit} onClick={() => setTransFilters((prev) => ({...prev, page: prev.page + 1}))}>
+                                    <ArrowRight />
+                                </button>
+                            </div>
+
+                            <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', marginTop: '1rem' }}>
+                                <button type="button" className="app-button app-button--subtle" onClick={() => navigate('/dashboard')}>
+                                    Home
+                                </button>
+                            </div>
+                        </section>
+                    </div>
+                </div>
+            </div>
+        </div>
     )
 }

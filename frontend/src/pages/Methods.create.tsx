@@ -1,4 +1,4 @@
-import { Flex, Box, Text, TextField, Button, Card } from '@radix-ui/themes'
+import { Text, Button } from '@radix-ui/themes'
 import { useAuth } from '../hooks'
 import type { CreateMethodInput } from '../types'
 import { useEffect, useState } from 'react'
@@ -45,17 +45,29 @@ export const MethodCreate = () => {
         )
     }
     return (
-        <Box className="w-full p-5">
-            <Text>New Method</Text>
-            <Card className="w-full min-h-[10rem] mt-4 mb-4">
-                <Flex gap='2' direction='column'>
-                <ChevronLeft
-                onClick={() => navigate("/methods")}/>
-                <TextField.Root placeholder="Name" value={method.name} onChange={(e) => setMethod({...method, name: e.target.value})}/>
-                {error && <Text color="red">{error}</Text>}
-                <Button onClick={() => onSubmit()}>Create Method</Button>
-                </Flex>
-            </Card>
-        </Box>
+        <div className="app-page">
+            <div className="app-shell">
+                <div className="app-frame">
+                    <div className="app-topbar">
+                        <div className="app-topbar__row">
+                            <div>
+                                <h1 className="app-title">New Method</h1>
+                                <p className="app-subtitle">Create a reusable payment method for transactions.</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div className="app-content">
+                        <section className="app-section">
+                            <div className="app-form-stack">
+                                <ChevronLeft className="app-icon-button" onClick={() => navigate("/methods")} />
+                                <input className="app-input app-input--form" placeholder="Name" value={method.name} onChange={(e) => setMethod({...method, name: e.target.value})}/>
+                                {error && <Text className="app-form-error">{error}</Text>}
+                                <Button className="app-button app-button--primary" onClick={() => onSubmit()}>Create Method</Button>
+                            </div>
+                        </section>
+                    </div>
+                </div>
+            </div>
+        </div>
     )
 }

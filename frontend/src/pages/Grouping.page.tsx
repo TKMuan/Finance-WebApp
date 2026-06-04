@@ -1,4 +1,4 @@
-import { Flex, Box, Text, TextField, Button, Card, DropdownMenu } from '@radix-ui/themes'
+import { Flex, Text, Button, DropdownMenu } from '@radix-ui/themes'
 import { useAuth, useGetGroups, useUpdateGroup, useDeleteGroup } from '../hooks'
 import { useEffect, useState } from 'react'
 import { useNavigate } from "react-router-dom"
@@ -39,38 +39,38 @@ const GroupDisplayComponent = ({record}: groupDisplayProp) => {
         return <Text>Deleting...</Text>
     }
     return (
-        <Flex direction="column">
-            <Flex direction="row" justify="between" align="center" className="justify-between">
-                <Text>
+        <div className="app-record-card app-record-card--group">
+            <div className="app-record-card__content">
+            <div className="app-record-card__row">
+                <Text className="app-record-card__title">
                     {record.name}
                 </Text>
-                <Flex direction="row" gap='2'>
+                <div className="app-record-actions">
                     {
                         editEnabled ? 
-                        <Check onClick={() => handleConfirm()}/> :
+                        <Check className="app-record-icon" onClick={() => handleConfirm()}/> :
 
                         confirmDelete ? 
-                        <Flex align="center">
-                            <X onClick={() => setConfirmDelete(false)}/>
-                            <Button className="method_delete_button"  onClick={() => handleDelete()}>Delete</Button>
-                        </Flex> : 
+                        <div className="app-record-actions">
+                            <X className="app-record-icon" onClick={() => setConfirmDelete(false)}/>
+                            <Button className="app-button app-record-delete"  onClick={() => handleDelete()}>Delete</Button>
+                        </div> : 
 
-                        <Flex>
-                        <Pencil onClick={() => setEditEnabled(true)}/>
-                        <Trash2 onClick={() => setConfirmDelete(true)}/>                                
-                        </Flex>
+                        <div className="app-record-actions">
+                        <Pencil className="app-record-icon" onClick={() => setEditEnabled(true)}/>
+                        <Trash2 className="app-record-icon" onClick={() => setConfirmDelete(true)}/>                                
+                        </div>
                         
                     }
-                </Flex>
-            </Flex>
-            { editEnabled && 
+                </div>
+            </div>
+            { editEnabled && (
                 <Flex>
-                    <TextField.Root className="w-full mt-4" value={newName} onChange={(e) => {setNewName(e.target.value)}}>
-
-                    </TextField.Root>
+                    <input className="app-input app-input--record app-record-input" value={newName} onChange={(e) => {setNewName(e.target.value)}} />
                 </Flex>
-            }
-        </Flex>
+            )}
+            </div>
+        </div>
     )
 
 }
@@ -91,81 +91,75 @@ export const GroupingPage = () => {
     }
 
     return (
-        <Box className="w-full p-5">
-            <Text className="pt-3">Welcome to your grouping page!</Text>
-            <Card className="w-full min-h-[10rem] mt-4 mb-4">
-                <Card className="w-full min-h-[10rem] mt-4 mb-4">
-                    <Text>Grouping List</Text>
-                    <Flex align={'center'} gap='2' my='2'>
-                        <TextField.Root className="w-full" value={searchGroup} onChange={(e) => setSearchGroup(e.target.value)}>
-                            <TextField.Slot side="right">
-                            </TextField.Slot>
-                        </TextField.Root>
-                        <Search onClick={() => refetch()}/> 
-                    </Flex>
-                    <Card className="size-full min-h-80">
-                        <Flex className="w-full" mb='4' mx='0' gap='2' align="center" justify="end">
-                            <Text>Records: </Text>
-                            <DropdownMenu.Root>
-                                <DropdownMenu.Trigger>
-                                    <Button variant='outline'>
-                                        {pageSize}
-                                        <ChevronDown/>
-                                    </Button>
-                                </DropdownMenu.Trigger> 
-                                <DropdownMenu.Content>
-                                    <DropdownMenu.Item onClick={() => setPageSize(5)}>
-                                        5
-                                    </DropdownMenu.Item>
-                                    <DropdownMenu.Item onClick={() => setPageSize(10)}>
-                                        10
-                                    </DropdownMenu.Item>
-                                    <DropdownMenu.Item onClick={() => setPageSize(15)}>
-                                        15
-                                    </DropdownMenu.Item>
-                                    <DropdownMenu.Item onClick={() => setPageSize(20)}>
-                                        20
-                                    </DropdownMenu.Item>
-                                </DropdownMenu.Content>
-                            </DropdownMenu.Root>
+        <div className="app-page">
+            <div className="app-shell">
+                <div className="app-frame">
+                    <div className="app-topbar">
+                        <div className="app-topbar__row">
+                            <div>
+                                <h1 className="app-title">Groupings</h1>
+                                <p className="app-subtitle">Organize transactions into reusable categories.</p>
+                            </div>
+                        </div>
+                    </div>
 
-                        </Flex>
-                        <Flex direction='column' gap='2'>
-                            {
-                                groups ? groups.data.map((record) => (
-                                    <Card id={record.id}>
-                                        <GroupDisplayComponent record={record}/>
-                                    </Card>
-                                ))
-                                :
-                                <Text>No records</Text>
-                            }
-                        </Flex>
-                    </Card>
-                    <Flex gap='2' align={"center"} justify={'center'} my='2'>
-                        <Button 
-                            onClick={() => setCurrentPage(prev => prev - 1)}
-                            variant="outline"
-                            disabled={currentPage <= 0}
-                        >Prev Page
-                        </Button>
-                        <Text>{(groups?.page || 0) + 1}</Text>
-                        <Button 
-                            onClick={() => setCurrentPage(prev => prev + 1)}
-                            disabled={groups?.data.length !== pageSize}
-                            variant="outline"
-                        >Next Page 
-                        </Button>
-                    </Flex>
-
-                </Card>
-                <Flex justify="center" gap='2'>
-                    <Button variant="outline" onClick={() => navigate("/dashboard")}>Home</Button>
-                    <Button variant="outline" onClick={() => navigate("/groups/create")}>
-                        Create Grouping
-                    </Button>
-                </Flex>
-            </Card>
-        </Box>
+                    <div className="app-content">
+                        <p className="app-intro">Welcome to your grouping page!</p>
+                        <section className="app-section">
+                            <div className="app-section__header">
+                                <h2 className="app-section__title">Grouping List</h2>
+                            </div>
+                            <div className="app-toolbar">
+                                <div className="app-toolbar__right app-input-row" style={{ justifyContent: 'flex-start' }}>
+                                        <input className="app-input app-input--search" value={searchGroup} onChange={(e) => setSearchGroup(e.target.value)} placeholder="Search groupings" />
+                                        <button type="button" className="app-icon-button" onClick={() => refetch()} aria-label="Search groupings">
+                                            <Search />
+                                        </button>
+                                </div>
+                            </div>
+                            <div className="app-list-panel" style={{marginTop: 16}}>
+                                <div className="app-toolbar" style={{ marginTop: 0 }}>
+                                    <div className="app-toolbar__right">
+                                        <Text>Records:</Text>
+                                        <DropdownMenu.Root>
+                                            <DropdownMenu.Trigger>
+                                                <Button className="app-button app-button--subtle" variant='outline'>
+                                                    {pageSize}
+                                                    <ChevronDown/>
+                                                </Button>
+                                            </DropdownMenu.Trigger>
+                                            <DropdownMenu.Content>
+                                                <DropdownMenu.Item onClick={() => setPageSize(5)}>5</DropdownMenu.Item>
+                                                <DropdownMenu.Item onClick={() => setPageSize(10)}>10</DropdownMenu.Item>
+                                                <DropdownMenu.Item onClick={() => setPageSize(15)}>15</DropdownMenu.Item>
+                                                <DropdownMenu.Item onClick={() => setPageSize(20)}>20</DropdownMenu.Item>
+                                            </DropdownMenu.Content>
+                                        </DropdownMenu.Root>
+                                    </div>
+                                </div>
+                                <div className="app-list">
+                                    {groups ? groups.data.map((record) => (
+                                        <div key={record.id} id={record.id} className="app-list-card">
+                                            <GroupDisplayComponent record={record}/>
+                                        </div>
+                                    )) : (
+                                        <Text>No records</Text>
+                                    )}
+                                </div>
+                            </div>
+                            <div className="app-toolbar" style={{ justifyContent: 'center', marginTop: '1.25rem' }}>
+                                <Button className="app-button app-button--subtle" onClick={() => setCurrentPage(prev => prev - 1)} variant="outline" disabled={currentPage <= 0}>Prev Page</Button>
+                                <Text>{(groups?.page || 0) + 1}</Text>
+                                <Button className="app-button app-button--subtle" onClick={() => setCurrentPage(prev => prev + 1)} disabled={groups?.data.length !== pageSize} variant="outline">Next Page</Button>
+                            </div>
+                            <div className="app-controls" style={{ justifyContent: 'center', marginTop: '1rem' }}>
+                                <Button className="app-button app-button--subtle" variant="outline" onClick={() => navigate("/dashboard")}>Home</Button>
+                                <Button className="app-button app-button--primary" variant="outline" onClick={() => navigate("/groups/create")}>Create Grouping</Button>
+                            </div>
+                        </section>
+                    </div>
+                </div>
+            </div>
+        </div>
     )
 }

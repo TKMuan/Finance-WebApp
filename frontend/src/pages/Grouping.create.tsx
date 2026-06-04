@@ -1,4 +1,4 @@
-import { Flex, Box, Text, TextField, Button, Card } from '@radix-ui/themes'
+import { Text, Button } from '@radix-ui/themes'
 import { useAuth } from '../hooks'
 import { useState } from 'react'
 import './transactions.create.css'
@@ -35,27 +35,32 @@ export const GroupingCreate = () => {
     }
 
     return (
-        <Box className="w-full p-5">
-            <Text>New Grouping</Text>
-            <Card className="w-full min-h-[10rem] mt-4 mb-4">
-                <Flex gap='2' direction='column'>
-                <TextField.Root placeholder="Name" value={parentName} onChange={(e) => setParentName(e.target.value)} />
-                {
-                    parentError ? 
-                    <Text>{parentError}</Text>
-                    : <></>
-                }
-                <Button onClick={onSubmit}>Create Grouping</Button>
-                </Flex>
-                <Flex gap='2' className="w-full" mt="2" justify='center'>
-                    <Button onClick={() => navigate('/groups')}>
-                        Back
-                    </Button>
-                    <Button onClick={() => navigate('/dashboard')}>
-                        Home
-                    </Button>
-                </Flex>
-            </Card>
-        </Box>
+        <div className="app-page">
+            <div className="app-shell">
+                <div className="app-frame">
+                    <div className="app-topbar">
+                        <div className="app-topbar__row">
+                            <div>
+                                <h1 className="app-title">New Grouping</h1>
+                                <p className="app-subtitle">Create a category for sorting transactions.</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div className="app-content">
+                        <section className="app-section">
+                            <div className="app-form-stack">
+                                <input className="app-input app-input--form" placeholder="Name" value={parentName} onChange={(e) => setParentName(e.target.value)} />
+                                {parentError ? <Text className="app-form-error">{parentError}</Text> : null}
+                                <Button className="app-button app-button--primary" onClick={onSubmit}>Create Grouping</Button>
+                            </div>
+                            <div className="app-controls" style={{ justifyContent: 'center', marginTop: '1rem' }}>
+                                <Button className="app-button app-button--subtle" onClick={() => navigate('/groups')}>Back</Button>
+                                <Button className="app-button app-button--subtle" onClick={() => navigate('/dashboard')}>Home</Button>
+                            </div>
+                        </section>
+                    </div>
+                </div>
+            </div>
+        </div>
     )
 }

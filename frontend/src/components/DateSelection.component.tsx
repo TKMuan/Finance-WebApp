@@ -1,5 +1,4 @@
-import { useMemo, type Dispatch, type SetStateAction } from "react";
-import {Button, Flex, Grid, Text, DropdownMenu, Box} from "@radix-ui/themes"
+import { useEffect, useMemo, useRef, useState, type Dispatch, type SetStateAction } from "react";
 const generateMonthGrid = (year: number, month: number) => {
     const firstDayIndex = new Date(year, month, 1).getDay();
     const totalDays = new Date(year, month+1, 0).getDate();
@@ -27,61 +26,128 @@ export const DateSelection = ({ value, onChange}: DateSelectionProps) => {
     const { year, month, day  } = {"year": value.getFullYear(), "month": value.getMonth(), "day": value.getDate()};
     const months = ["January", 'February', "March", "April", "May", "June", "July", "August", 'September', "October", "November", "December"]
     const offsets = useMemo(() => generateMonthGrid(year, month), [year, month]);
+    const [isOpen, setIsOpen] = useState(false)
+    const rootRef = useRef<HTMLDivElement | null>(null)
 
+    useEffect(() => {
+        const handlePointerDown = (event: MouseEvent) => {
+            if (rootRef.current && !rootRef.current.contains(event.target as Node)) {
+                setIsOpen(false)
+            }
+        }
 
-    console.log("Updating date: ", year, month, day)
+        document.addEventListener("mousedown", handlePointerDown)
+        return () => document.removeEventListener("mousedown", handlePointerDown)
+    }, [])
+
+    useEffect(() => {
+        if (!isOpen) {
+            return
+        }
+
+        rootRef.current?.scrollIntoView({
+            behavior: "smooth",
+            block: "start",
+            inline: "nearest",
+        })
+    }, [isOpen])
+
     const updateDate = (year: number, month: number, day: number) => {
-        console.log("y m d: ", year, month, day)
         const newDate = new Date(year, month, day)
-        console.log("newDate", newDate)
         onChange(newDate)
     }
 
     return (
-        <DropdownMenu.Root>
-            <DropdownMenu.Trigger>
-                <Button variant="ghost">{year} / {month + 1} / {day}</Button>
-            </DropdownMenu.Trigger>
-            <DropdownMenu.Content className="w-full bg-white rounded-md shadow-lg p-2">
-                <Flex gap='2' direction='column' className="w-full px-4 py-2 items-center justify-center">
-                    <Box className="w-full items-center justify-center">
-                        <Button className="select_button" onClick={() => updateDate(value.getFullYear() - 1, value.getMonth(), value.getDate())}> {"<"}</Button>
-                        <Text className='px-4'>{year}</Text>
-                        <Button className="select_button" onClick={() => updateDate(value.getFullYear() + 1, value.getMonth(), value.getDate())}> {">"}</Button>
-                    </Box>
-                    <DropdownMenu.Separator className="w-full my-1 border-t" />
-                    <Box className="w-full flex content-center justify-center">
-                        <Button className="select_button" onClick={() => updateDate(value.getFullYear(), value.getMonth() - 1, value.getDate())} disabled={month === 0}>
-                            {"<"}
-                        </Button>
-                        <Text className='px-4'>{months[month]}</Text>
-                        <Button className="select_button" onClick={() => updateDate(value.getFullYear(), value.getMonth() + 1, value.getDate())} disabled={month === 11}>
-                            {">"}
-                        </Button>
-                    </Box>
-                    <DropdownMenu.Separator className="w-full my-1 border-t" />
-                </Flex>
-                <Grid columns={{initial: "7"}}>
-                    <Text>Su</Text>
-                    <Text>Mo</Text>
-                    <Text>Tu</Text>
-                    <Text>We</Text>
-                    <Text>Th</Text>
-                    <Text>Fr</Text>
-                    <Text>Sa</Text>
-                </Grid>
-                <Grid columns={{initial: "7"}}>
-                {
-                    offsets.map((valueStr) => (
-                        <Button className="calendar_button" key={valueStr.trim() ? valueStr : Math.random()} onClick={() => {updateDate(year, month, parseInt(valueStr))}}>
-                            {valueStr}
-                        </Button>
-                    ))
-                }
+        <div ref={rootRef} className="app-date-picker">
+            <button
+                type="button"
+                className="app-button app-button--subtle app-date-picker__trigger"
+                onClick={() => setIsOpen((prev) => !prev)}
+                aria-haspopup="dialog"
+                aria-expanded={isOpen}
+            >
+                {year} / {month + 1} / {day}
+            </button>
 
-                </Grid>
+            {isOpen && (
+                <div className="app-date-menu" role="dialog" aria-label="Date selection">
+                    <div className="app-date-nav">
+                        <div className="app-date-nav__row">
+                            <button
+                                type="button"
+                                className="app-date-nav__button"
+                                onClick={() => updateDate(value.getFullYear() - 1, value.getMonth(), value.getDate())}
+                                aria-label="Previous year"
+                            >
+                                &lt;
+                            </button>
+                            <span className="app-date-nav__label">{year}</span>
+                            <button
+                                type="button"
+                                className="app-date-nav__button"
+                                onClick={() => updateDate(value.getFullYear() + 1, value.getMonth(), value.getDate())}
+                                aria-label="Next year"
+                            >
+                                &gt;
+                            </button>
+                        </div>
+                        <div className="app-date-nav__row">
+                            <button
+                                type="button"
+                                className="app-date-nav__button"
+                                onClick={() => updateDate(value.getFullYear(), value.getMonth() - 1, value.getDate())}
+                                disabled={month === 0}
+                                aria-label="Previous month"
+                            >
+                                &lt;
+                            </button>
+                            <span className="app-date-nav__label">{months[month]}</span>
+                            <button
+                                type="button"
+                                className="app-date-nav__button"
+                                onClick={() => updateDate(value.getFullYear(), value.getMonth() + 1, value.getDate())}
+                                disabled={month === 11}
+                                aria-label="Next month"
+                            >
+                                &gt;
+                            </button>
+                        </div>
+                    </div>
+                    <div className="app-date-divider" />
+                    <div className="app-date-grid__head">
+                        <span>Su</span>
+                        <span>Mo</span>
+                        <span>Tu</span>
+                        <span>We</span>
+                        <span>Th</span>
+                        <span>Fr</span>
+                        <span>Sa</span>
+                    </div>
+                    <div className="app-date-grid">
+                        {
+                            offsets.map((valueStr, index) => (
+                                valueStr.trim() ? (
+                                    <button
+                                        type="button"
+                                        className="app-date-grid__day"
+                                        key={`${valueStr}-${index}`}
+                                        onClick={() => {
+                                            updateDate(year, month, parseInt(valueStr))
+                                            setIsOpen(false)
+                                        }}
+                                    >
+                                        {valueStr}
+                                    </button>
+                                ) : (
+                                    <span key={`empty-${index}`} className="app-date-grid__empty" />
+                                )
+                            ))
 
-            </DropdownMenu.Content>
-        </DropdownMenu.Root>
+                        }
+
+                    </div>
+                </div>
+            )}
+        </div>
     )
 }
