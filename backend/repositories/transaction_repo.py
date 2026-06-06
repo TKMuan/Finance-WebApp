@@ -19,8 +19,10 @@ from typing import (
 )
 from datetime import (
     datetime,
-    date,
-    time
+    timedelta
+)
+from dateutil.relativedelta import (
+    relativedelta
 )
 from calendar import (
     monthrange
@@ -263,15 +265,22 @@ class TransactionsRepo(BaseRepo):
         return res
     
     def dashboard_stats(self, conn: connection, aid: str):
-        today = datetime.today()
-        day = today.date() 
+        today = datetime.today().replace(hour=0, minute=0, second=0, microsecond=0)
+        tomorrow = today + timedelta(days=1)
         month = today.month
         year = today.year
+        this_month = datetime(year, month, 1)
+        next_month = this_month + relativedelta(months=1) 
+        this_year = datetime(year, 1, 1)
+        next_year = this_year + relativedelta(years=1)
+        logger.debug(f"today: {today} | tomorrow: {tomorrow}")
+        logger.debug(f"this_month: {this_month} | next_month: {next_month}")
+        logger.debug(f"this_year: {this_year} | next_year: {next_year}")
         select_query = sql.SQL("""
             SELECT sum({trans}.{amount}::numeric), {method}.{name}
             FROM {trans} LEFT JOIN {method}
             ON {trans}.{methodcol} = {method}.{id}
-            WHERE {trans}.{aid} = %s AND {trans}.{ttime} >= %s AND {trans}.{ttime} <= %s AND {trans}.{type} = %s
+            WHERE {trans}.{aid} = %s AND {trans}.{ttime} >= %s AND {trans}.{ttime} < %s AND {trans}.{type} = %s
             GROUP BY {trans}.{methodcol}, {method}.{name} 
 """).format(
     trans=sql.Identifier("transactions"),
@@ -284,14 +293,13 @@ class TransactionsRepo(BaseRepo):
     ttime=sql.Identifier('transaction_time'),
     type=sql.Identifier("type")
 )
-        _, enddate = monthrange(year, month)
 
         with conn.cursor(cursor_factory=RealDictCursor) as curr:
-            curr.execute(select_query, (aid,datetime.combine(day, time.min), datetime.combine(day, time.max), True))
+            curr.execute(select_query, (aid, today, tomorrow, True))
             day_stats = curr.fetchall()
-            curr.execute(select_query, (aid,date(year, month, 1), date(year, month, enddate), True))
+            curr.execute(select_query, (aid, this_month, next_month, True))
             month_stats = curr.fetchall()
-            curr.execute(select_query, (aid,date(year, 1, 1), date(year, 12, 31), True))
+            curr.execute(select_query, (aid, this_year, next_year, True))
             year_stats = curr.fetchall()
     
         return {"day": day_stats, "month": month_stats, "year": year_stats}
