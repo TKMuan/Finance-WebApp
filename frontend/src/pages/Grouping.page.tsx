@@ -1,8 +1,8 @@
-import { Flex, Text, Button, DropdownMenu } from '@radix-ui/themes'
+import { Text, Button} from '@radix-ui/themes'
 import { useAuth, useGetGroups, useUpdateGroup, useDeleteGroup } from '../hooks'
 import { useEffect, useState } from 'react'
 import { useNavigate } from "react-router-dom"
-import { Search, Check, Pencil, Trash2, X, ChevronDown } from 'lucide-react'
+import { Search, Check, Pencil, Trash2, X} from 'lucide-react'
 import type { UserGroupings } from '../types'
 import { LoadingComponent } from '../components'
 // removed unused useQueryClient import
@@ -42,9 +42,9 @@ const GroupDisplayComponent = ({record}: groupDisplayProp) => {
         <div className="app-record-card app-record-card--group">
             <div className="app-record-card__content">
             <div className="app-record-card__row">
-                <Text className="app-record-card__title">
+                <text className="app-record-card__title">
                     {record.name}
-                </Text>
+                </text>
                 <div className="app-record-actions">
                     {
                         editEnabled ? 
@@ -53,7 +53,7 @@ const GroupDisplayComponent = ({record}: groupDisplayProp) => {
                         confirmDelete ? 
                         <div className="app-record-actions">
                             <X className="app-record-icon" onClick={() => setConfirmDelete(false)}/>
-                            <Button className="app-button app-record-delete"  onClick={() => handleDelete()}>Delete</Button>
+                            <button className="app-button app-record-delete"  onClick={() => handleDelete()}>Delete</button>
                         </div> : 
 
                         <div className="app-record-actions">
@@ -65,9 +65,9 @@ const GroupDisplayComponent = ({record}: groupDisplayProp) => {
                 </div>
             </div>
             { editEnabled && (
-                <Flex>
+                <div>
                     <input className="app-input app-input--record app-record-input" value={newName} onChange={(e) => {setNewName(e.target.value)}} />
-                </Flex>
+                </div>
             )}
             </div>
         </div>
@@ -123,7 +123,7 @@ export const GroupingPage = () => {
                                         <legend>Records:</legend>
                                         <div className="app-toolbar__split-right max-w-24">
                                             <select
-                                                className="app-select app-input--full"
+                                                className="app-select app-input--full "
                                                 value={pageSize}
                                                 onChange={(e) => setPageSize(Number.parseInt(e.target.value, 10))}
                                             >
@@ -147,7 +147,7 @@ export const GroupingPage = () => {
                             </div>
                             <div className="app-toolbar" style={{ justifyContent: 'center', marginTop: '1.25rem' }}>
                                 <Button className="app-button app-button--subtle" onClick={() => setCurrentPage(prev => prev - 1)} variant="outline" disabled={currentPage <= 0}>Prev Page</Button>
-                                <Text>{(groups?.page || 0) + 1}</Text>
+                                <text>{(groups?.page || 0) + 1}</text>
                                 <Button className="app-button app-button--subtle" onClick={() => setCurrentPage(prev => prev + 1)} disabled={groups?.data.length !== pageSize} variant="outline">Next Page</Button>
                             </div>
                             <div className="app-controls" style={{ justifyContent: 'center', marginTop: '1rem' }}>
