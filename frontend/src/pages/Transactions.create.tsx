@@ -1,7 +1,7 @@
 import { useAuth, useGetMethods, useGetGroups, useCreateTransaction } from '../hooks'
 import { DateSelection, LoadingComponent } from '../components'
 import { useEffect, useRef, useState } from 'react'
-import type { CreateTransactionInput, UserGroupings } from '../types'
+import type { CreateTransactionInput } from '../types'
 import './transactions.create.css'
 import { useNavigate } from 'react-router-dom'
 import { Info } from 'lucide-react'
@@ -10,7 +10,6 @@ export const TransactionCreate = () => {
     const {user, loading} = useAuth()
 
     const [selectedDate, setSelectedDate] = useState(new Date())
-    const [isGroupMenuOpen, setIsGroupMenuOpen] = useState(false)
     const groupMenuRef = useRef<HTMLDivElement | null>(null)
 
     const {data: userMethodData, isPending: gettingMethods} = useGetMethods(user?.id || "")
@@ -25,7 +24,7 @@ export const TransactionCreate = () => {
         transaction_time: selectedDate,
         accountID: user?.id || "",
         groups: [],
-        type: false
+        type: true
     })
 
     useEffect(() => {
@@ -37,6 +36,9 @@ export const TransactionCreate = () => {
             setFormData((prev) => ({...prev, method: userMethodData.data[0]}))
         }
     }, [userMethodData, FormData.method.id])
+    useEffect(() => {
+        console.log(FormData.groups)
+    }, [FormData.groups])
 
     useEffect(() => {
         const handlePointerDown = (event: MouseEvent) => {
@@ -48,18 +50,18 @@ export const TransactionCreate = () => {
         return () => document.removeEventListener("mousedown", handlePointerDown)
     }, [])
 
-    const addGroup = (record: Omit<UserGroupings, 'accountID'>) => {
-        const exist = FormData.groups.some(user => user.id === record.id) 
+    // const addGroup = (record: Omit<UserGroupings, 'accountID'>) => {
+    //     const exist = FormData.groups.some(user => user.id === record.id) 
 
-        if (!exist){
-            setFormData((prev) => ({...prev, groups: [...prev.groups, record]}))
-        }
-    }
-    const removeGroup = (id: string) => {
-        setFormData((prev) => (
-            {...prev, groups: prev.groups.filter(user => user.id !== id)}
-        ))
-    }
+    //     if (!exist){
+    //         setFormData((prev) => ({...prev, groups: [...prev.groups, record]}))
+    //     }
+    // }
+    // const removeGroup = (id: string) => {
+    //     setFormData((prev) => (
+    //         {...prev, groups: prev.groups.filter(user => user.id !== id)}
+    //     ))
+    // }
     const onSubmit = () => {
          console.log("Creating transaction with data: ", FormData)
          createTransaction(FormData)
@@ -111,6 +113,17 @@ export const TransactionCreate = () => {
                                         value={FormData.description}
                                         onChange={(e) => setFormData((prev) => ({...prev, description: e.target.value}))}
                                     />
+                                </label>
+
+                                <label className="app-filter-field">
+                                    <span className="app-filter-label">Transaction Date</span>
+                                    <div className="w-full" style={{justifyContent: 'center', alignContent: 'center'}}>
+                                        <DateSelection
+                                            value={selectedDate}
+                                            onChange={setSelectedDate}
+                                        />
+
+                                    </div>
                                 </label>
 
                                 <div className="transaction-create-section-block">
@@ -177,15 +190,30 @@ export const TransactionCreate = () => {
                                     }
                                 </div>
 
-                                <label className="app-filter-field">
-                                    <span className="app-filter-label">Transaction Date</span>
-                                    <DateSelection
-                                        value={selectedDate}
-                                        onChange={setSelectedDate}
-                                    />
-                                </label>
+                                <fieldset className="transaction-dialog__field">
+                                    <legend className="transaction-dialog__label mb-4">Transaction Groups</legend>
+                                    <div className="transaction-dialog__option-grid">
+                                        {userGroupData?.data.map((group) => (
+                                            <label key={group.id} className="transaction-dialog__choice">
+                                                <input
+                                                    type="checkbox"
+                                                    checked={FormData.groups.includes(group.id)}
+                                                    onChange={() => setFormData((prev) => (
+                                                        {
+                                                            ...prev,
+                                                            groups: prev.groups.includes(group.id) ? prev.groups.filter((groupID) => groupID !== group.id) : [...prev.groups, group.id]
 
-                                <div className="transaction-create-section-block">
+                                                        }))
+                                                    }
+                                                />
+                                                
+                                                <span>{group.name}</span>
+                                            </label>
+                                        ))}
+                                    </div>
+                                </fieldset>
+
+                                {/* <div className="transaction-create-section-block">
                                     <span className="app-filter-label">Transaction Groups</span>
                                     <div className="transaction-create-group-selected">
                                         {
@@ -201,8 +229,8 @@ export const TransactionCreate = () => {
                                                 </button>
                                             )) : <span className="transaction-create-empty">No groups selected yet.</span>
                                         }
-                                    </div>
-
+                                    </div> */}
+{/* 
                                     <div className="transaction-create-group-picker" ref={groupMenuRef}>
                                         <button
                                             type="button"
@@ -230,8 +258,17 @@ export const TransactionCreate = () => {
                                                 ))}
                                             </div>
                                         ) : null}
-                                    </div>
-                                </div>
+                                    </div> */}
+                            </div>
+                            <div className="transaction-create-actions">
+                                <button
+                                    type="button"
+                                    className="app-button app-button--primary w-full"
+                                    onClick={onSubmit}
+                                    disabled={!userMethodData?.data.length}
+                                >
+                                    Create Transaction
+                                </button>
                             </div>
 
                             <div className="transaction-create-actions">
@@ -241,14 +278,6 @@ export const TransactionCreate = () => {
                                     onClick={() => navigate('/transactions')}
                                 >
                                     Back
-                                </button>
-                                <button
-                                    type="button"
-                                    className="app-button app-button--primary"
-                                    onClick={onSubmit}
-                                    disabled={!userMethodData?.data.length}
-                                >
-                                    Create Transaction
                                 </button>
                                 <button
                                     type="button"

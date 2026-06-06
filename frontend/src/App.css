@@ -909,7 +909,7 @@ body:hover::-webkit-scrollbar-track,
 }
 
 .app-date-menu {
-  position: absolute;
+  position: static;
   z-index: 30;
   width: min(100vw - 1.5rem, 24rem);
   padding: 1rem;
@@ -924,7 +924,18 @@ body:hover::-webkit-scrollbar-track,
 
 .app-date-picker {
   position: relative;
-  display: inline-flex;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  width: 100%;
+}
+
+.app-date-menu__selected-date {
+  width: 100%;
+  margin-bottom: 0.9rem;
+  color: #fff;
+  text-align: center;
+  font-weight: 600;
 }
 
 .app-date-picker__trigger {

@@ -280,7 +280,7 @@ class TransactionsRepo(BaseRepo):
             SELECT sum({trans}.{amount}::numeric), {method}.{name}
             FROM {trans} LEFT JOIN {method}
             ON {trans}.{methodcol} = {method}.{id}
-            WHERE {trans}.{aid} = %s AND {trans}.{ttime} >= %s AND {trans}.{ttime} < %s AND {trans}.{type} = %s
+            WHERE {trans}.{aid} = %s AND {trans}.{ttime} > %s AND {trans}.{ttime} < %s AND {trans}.{type} = %s
             GROUP BY {trans}.{methodcol}, {method}.{name} 
 """).format(
     trans=sql.Identifier("transactions"),
@@ -297,9 +297,9 @@ class TransactionsRepo(BaseRepo):
         with conn.cursor(cursor_factory=RealDictCursor) as curr:
             curr.execute(select_query, (aid, today, tomorrow, True))
             day_stats = curr.fetchall()
-            curr.execute(select_query, (aid, this_month, next_month, True))
+            curr.execute(select_query, (aid, this_month, next_month - timedelta(days=1), True))
             month_stats = curr.fetchall()
-            curr.execute(select_query, (aid, this_year, next_year, True))
+            curr.execute(select_query, (aid, this_year, next_year - timedelta(days=1), True))
             year_stats = curr.fetchall()
     
         return {"day": day_stats, "month": month_stats, "year": year_stats}

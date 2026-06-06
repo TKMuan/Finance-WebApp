@@ -526,7 +526,7 @@ export const TransactionPage = () => {
         "to_date": null,
         "group": null,
         "page": 0,
-        "limit": 10
+        "limit": 20
     })
 
     const updateDesc = (val: string) => {
@@ -600,8 +600,8 @@ export const TransactionPage = () => {
                                         value={transFilters.limit}
                                         onChange={(e) => setTransFilters((prev) => ({ ...prev, limit: Number.parseInt(e.target.value, 10) }))}
                                     >
-                                        <option value={10}>10</option>
-                                        <option value={25}>25</option>
+                                        <option value={20}>20</option>
+                                        <option value={35}>35</option>
                                         <option value={50}>50</option>
                                         <option value={100}>100</option>
                                     </select>

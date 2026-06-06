@@ -28,7 +28,7 @@ export interface CreateTransactionInput {
     type: boolean,
     method: Omit<UserMethods, "accountID">,
     transaction_time: Date,
-    groups: Omit<UserGroupings, "accountID">[],
+    groups: string[],
 }
 export interface TransactionDashboard{
     name: string,

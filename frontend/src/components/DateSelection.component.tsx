@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState, type Dispatch, type SetStateAction } from "react";
+import { useMemo, type Dispatch, type SetStateAction } from "react";
 const generateMonthGrid = (year: number, month: number) => {
     const firstDayIndex = new Date(year, month, 1).getDay();
     const totalDays = new Date(year, month+1, 0).getDate();
@@ -23,34 +23,10 @@ interface DateSelectionProps{
     onChange: Dispatch<SetStateAction<Date>>;
 }
 export const DateSelection = ({ value, onChange}: DateSelectionProps) => {
-    const { year, month, day  } = {"year": value.getFullYear(), "month": value.getMonth(), "day": value.getDate()};
+    const { year, month, day } = {"year": value.getFullYear(), "month": value.getMonth(), "day": value.getDate()};
     const months = ["January", 'February', "March", "April", "May", "June", "July", "August", 'September', "October", "November", "December"]
     const offsets = useMemo(() => generateMonthGrid(year, month), [year, month]);
-    const [isOpen, setIsOpen] = useState(false)
-    const rootRef = useRef<HTMLDivElement | null>(null)
-
-    useEffect(() => {
-        const handlePointerDown = (event: MouseEvent) => {
-            if (rootRef.current && !rootRef.current.contains(event.target as Node)) {
-                setIsOpen(false)
-            }
-        }
-
-        document.addEventListener("mousedown", handlePointerDown)
-        return () => document.removeEventListener("mousedown", handlePointerDown)
-    }, [])
-
-    useEffect(() => {
-        if (!isOpen) {
-            return
-        }
-
-        rootRef.current?.scrollIntoView({
-            behavior: "smooth",
-            block: "start",
-            inline: "nearest",
-        })
-    }, [isOpen])
+    const selectedDateLabel = `${months[month]} ${day}, ${year}`
 
     const updateDate = (year: number, month: number, day: number) => {
         const newDate = new Date(year, month, day)
@@ -58,96 +34,82 @@ export const DateSelection = ({ value, onChange}: DateSelectionProps) => {
     }
 
     return (
-        <div ref={rootRef} className="app-date-picker">
-            <button
-                type="button"
-                className="app-button app-button--subtle app-date-picker__trigger"
-                onClick={() => setIsOpen((prev) => !prev)}
-                aria-haspopup="dialog"
-                aria-expanded={isOpen}
-            >
-                {year} / {month + 1} / {day}
-            </button>
-
-            {isOpen && (
-                <div className="app-date-menu" role="dialog" aria-label="Date selection">
-                    <div className="app-date-nav">
-                        <div className="app-date-nav__row">
-                            <button
-                                type="button"
-                                className="app-date-nav__button"
-                                onClick={() => updateDate(value.getFullYear() - 1, value.getMonth(), value.getDate())}
-                                aria-label="Previous year"
-                            >
-                                &lt;
-                            </button>
-                            <span className="app-date-nav__label">{year}</span>
-                            <button
-                                type="button"
-                                className="app-date-nav__button"
-                                onClick={() => updateDate(value.getFullYear() + 1, value.getMonth(), value.getDate())}
-                                aria-label="Next year"
-                            >
-                                &gt;
-                            </button>
-                        </div>
-                        <div className="app-date-nav__row">
-                            <button
-                                type="button"
-                                className="app-date-nav__button"
-                                onClick={() => updateDate(value.getFullYear(), value.getMonth() - 1, value.getDate())}
-                                disabled={month === 0}
-                                aria-label="Previous month"
-                            >
-                                &lt;
-                            </button>
-                            <span className="app-date-nav__label">{months[month]}</span>
-                            <button
-                                type="button"
-                                className="app-date-nav__button"
-                                onClick={() => updateDate(value.getFullYear(), value.getMonth() + 1, value.getDate())}
-                                disabled={month === 11}
-                                aria-label="Next month"
-                            >
-                                &gt;
-                            </button>
-                        </div>
+        <div className="app-date-picker">
+            <div className="app-date-menu" role="group" aria-label="Date selection" style={{ position: "static", zIndex: "auto" }}>
+                <div className="app-date-menu__selected-date" >{selectedDateLabel}</div>
+                <div className="app-date-nav">
+                    <div className="app-date-nav__row">
+                        <button
+                            type="button"
+                            className="app-date-nav__button"
+                            onClick={() => updateDate(value.getFullYear() - 1, value.getMonth(), value.getDate())}
+                            aria-label="Previous year"
+                        >
+                            &lt;
+                        </button>
+                        <span className="app-date-nav__label">{year}</span>
+                        <button
+                            type="button"
+                            className="app-date-nav__button"
+                            onClick={() => updateDate(value.getFullYear() + 1, value.getMonth(), value.getDate())}
+                            aria-label="Next year"
+                        >
+                            &gt;
+                        </button>
                     </div>
-                    <div className="app-date-divider" />
-                    <div className="app-date-grid__head">
-                        <span>Su</span>
-                        <span>Mo</span>
-                        <span>Tu</span>
-                        <span>We</span>
-                        <span>Th</span>
-                        <span>Fr</span>
-                        <span>Sa</span>
-                    </div>
-                    <div className="app-date-grid">
-                        {
-                            offsets.map((valueStr, index) => (
-                                valueStr.trim() ? (
-                                    <button
-                                        type="button"
-                                        className="app-date-grid__day"
-                                        key={`${valueStr}-${index}`}
-                                        onClick={() => {
-                                            updateDate(year, month, parseInt(valueStr))
-                                            setIsOpen(false)
-                                        }}
-                                    >
-                                        {valueStr}
-                                    </button>
-                                ) : (
-                                    <span key={`empty-${index}`} className="app-date-grid__empty" />
-                                )
-                            ))
-
-                        }
-
+                    <div className="app-date-nav__row">
+                        <button
+                            type="button"
+                            className="app-date-nav__button"
+                            onClick={() => updateDate(value.getFullYear(), value.getMonth() - 1, value.getDate())}
+                            disabled={month === 0}
+                            aria-label="Previous month"
+                        >
+                            &lt;
+                        </button>
+                        <span className="app-date-nav__label">{months[month]}</span>
+                        <button
+                            type="button"
+                            className="app-date-nav__button"
+                            onClick={() => updateDate(value.getFullYear(), value.getMonth() + 1, value.getDate())}
+                            disabled={month === 11}
+                            aria-label="Next month"
+                        >
+                            &gt;
+                        </button>
                     </div>
                 </div>
-            )}
+                <div className="app-date-divider" />
+                <div className="app-date-grid__head">
+                    <span>Su</span>
+                    <span>Mo</span>
+                    <span>Tu</span>
+                    <span>We</span>
+                    <span>Th</span>
+                    <span>Fr</span>
+                    <span>Sa</span>
+                </div>
+                <div className="app-date-grid">
+                    {
+                        offsets.map((valueStr, index) => (
+                            valueStr.trim() ? (
+                                <button
+                                    type="button"
+                                    className="app-date-grid__day"
+                                    key={`${valueStr}-${index}`}
+                                    onClick={() => updateDate(year, month, parseInt(valueStr))}
+                                >
+                                    {valueStr}
+                                </button>
+                            ) : (
+                                <span key={`empty-${index}`} className="app-date-grid__empty" />
+                            )
+                        ))
+
+                    }
+
+                </div>
+            </div>
         </div>
     )
 }

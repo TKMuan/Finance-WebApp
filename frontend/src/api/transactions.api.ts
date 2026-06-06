@@ -15,7 +15,7 @@ export const create_transaction = async (data: CreateTransactionInput) => {
         headers: { "Content-Type": "application/json" },
         credentials: "include",
         body: JSON.stringify({...payload,
-        groups: data.groups.map(record=> record.id),
+        groups: data.groups,
         method: data.method.id,
         type: data.type})
     })

@@ -120,21 +120,19 @@ export const GroupingPage = () => {
                             <div className="app-list-panel" style={{marginTop: 16}}>
                                 <div className="app-toolbar" style={{ marginTop: 0 }}>
                                     <div className="app-toolbar__right">
-                                        <Text>Records:</Text>
-                                        <DropdownMenu.Root>
-                                            <DropdownMenu.Trigger>
-                                                <Button className="app-button app-button--subtle" variant='outline'>
-                                                    {pageSize}
-                                                    <ChevronDown/>
-                                                </Button>
-                                            </DropdownMenu.Trigger>
-                                            <DropdownMenu.Content>
-                                                <DropdownMenu.Item onClick={() => setPageSize(5)}>5</DropdownMenu.Item>
-                                                <DropdownMenu.Item onClick={() => setPageSize(10)}>10</DropdownMenu.Item>
-                                                <DropdownMenu.Item onClick={() => setPageSize(15)}>15</DropdownMenu.Item>
-                                                <DropdownMenu.Item onClick={() => setPageSize(20)}>20</DropdownMenu.Item>
-                                            </DropdownMenu.Content>
-                                        </DropdownMenu.Root>
+                                        <legend>Records:</legend>
+                                        <div className="app-toolbar__split-right max-w-24">
+                                            <select
+                                                className="app-select app-input--full"
+                                                value={pageSize}
+                                                onChange={(e) => setPageSize(Number.parseInt(e.target.value, 10))}
+                                            >
+                                                <option value={20}>20</option>
+                                                <option value={35}>35</option>
+                                                <option value={50}>50</option>
+                                                <option value={100}>100</option>
+                                            </select>
+                                        </div>
                                     </div>
                                 </div>
                                 <div className="app-list">
