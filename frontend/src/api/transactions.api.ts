@@ -8,8 +8,8 @@ export const create_transaction = async (data: CreateTransactionInput) => {
     const {
         type, ...payload
     } = data
-    payload
-    console.log("payload data: ", payload)
+    
+    console.log("payload data: ", {...payload, transaction_time: data.transaction_time.toISOString()})
     const response = await fetch(`${BACKEND_API}/transactions/`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },

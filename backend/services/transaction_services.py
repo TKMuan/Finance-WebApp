@@ -26,7 +26,8 @@ from utils import (
     CryptoUtil
 )
 from datetime import (
-    datetime
+    datetime,
+    timezone
 )
 from typing import (
     Any
@@ -62,11 +63,12 @@ class TransactionsService:
         logger.debug(f"Recieved data: {data}")  
         tGroups = data.pop("groups", [])
 
-        timing = datetime.now()
+        timing = datetime.now(tz=timezone.utc)
         data['id'] = CryptoUtil.generate_sha256_hash(str(timing) + data['accountID'])
         data['created'] = timing
         data['modified'] = timing
         data['modified_by'] = data['accountID']
+        data['transaction_time'] = datetime.fromisoformat(data['transaction_time'].replace('Z', '+00:00'))
         new_transaction = Transactions(**data)
         logger.debug(f"transaction data: {new_transaction.__dict__}")
 

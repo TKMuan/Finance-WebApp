@@ -45,7 +45,6 @@ export const DateSelection = ({ value, onChange}: DateSelectionProps) => {
                             onClick={() => updateDate(value.getFullYear() - 1, value.getMonth(), value.getDate())}
                             aria-label="Previous year"
                         >
-                            &lt;
                         </button>
                         <span className="app-date-nav__label">{year}</span>
                         <button
@@ -54,7 +53,6 @@ export const DateSelection = ({ value, onChange}: DateSelectionProps) => {
                             onClick={() => updateDate(value.getFullYear() + 1, value.getMonth(), value.getDate())}
                             aria-label="Next year"
                         >
-                            &gt;
                         </button>
                     </div>
                     <div className="app-date-nav__row">
